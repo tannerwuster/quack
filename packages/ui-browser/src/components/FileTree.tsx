@@ -4,6 +4,8 @@ import { parseDiff } from "react-diff-view";
 import { useStore } from "@/lib/store";
 import { filePath } from "@/lib/selection";
 import { fileBadge } from "@/lib/file-badge";
+import { iconForFile } from "@/lib/file-icon";
+import { FileTypeIcon } from "./file-icons";
 import { buildFileTree, countLeaves, type TreeDir, type TreeFile, type TreeNode } from "@/lib/file-tree";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -159,6 +161,7 @@ const FileRow = ({ file, depth }: { file: TreeFile; depth: number }) => {
           isViewed && "text-muted-foreground",
         )}
       >
+        <FileTypeIcon icon={iconForFile(file.name)} className="size-4 shrink-0" />
         <span
           className={cn(
             "inline-flex size-4 shrink-0 items-center justify-center rounded text-[0.65rem] font-bold",
