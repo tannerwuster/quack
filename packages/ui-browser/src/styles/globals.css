@@ -25,6 +25,15 @@
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
   --radius: 0.625rem;
+  --syntax-comment: #6a737d;
+  --syntax-punctuation: #24292e;
+  --syntax-property: #005cc5;
+  --syntax-number: #005cc5;
+  --syntax-string: #032f62;
+  --syntax-keyword: #d73a49;
+  --syntax-function: #6f42c1;
+  --syntax-variable: #e36209;
+  --syntax-deleted: #b31d28;
 }
 
 @theme inline {
@@ -105,28 +114,30 @@
   background-color: oklch(0.96 0.04 240);
 }
 
-/* Prism token colors — GitHub Light-ish palette, applied to the tokens
-   react-diff-view renders via refractor. Prism class names are stable. */
+/* Prism token colors, driven by --syntax-* so each theme ships its own
+   palette. Class names are the stable ones refractor emits. */
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  color: #6a737d;
+  color: var(--syntax-comment);
   font-style: italic;
 }
 .token.punctuation {
-  color: #24292e;
+  color: var(--syntax-punctuation);
 }
 .token.namespace {
   opacity: 0.7;
 }
 .token.property,
 .token.tag,
-.token.boolean,
-.token.number,
 .token.constant,
 .token.symbol {
-  color: #005cc5;
+  color: var(--syntax-property);
+}
+.token.boolean,
+.token.number {
+  color: var(--syntax-number);
 }
 .token.selector,
 .token.attr-name,
@@ -134,29 +145,27 @@
 .token.char,
 .token.builtin,
 .token.inserted {
-  color: #032f62;
+  color: var(--syntax-string);
 }
 .token.operator,
 .token.entity,
 .token.url,
 .language-css .token.string,
-.style .token.string {
-  color: #d73a49;
-  background: transparent;
-}
+.style .token.string,
 .token.atrule,
 .token.attr-value,
 .token.keyword {
-  color: #d73a49;
+  color: var(--syntax-keyword);
+  background: transparent;
 }
 .token.function,
 .token.class-name {
-  color: #6f42c1;
+  color: var(--syntax-function);
 }
 .token.regex,
 .token.important,
 .token.variable {
-  color: #e36209;
+  color: var(--syntax-variable);
 }
 .token.important,
 .token.bold {
@@ -166,7 +175,7 @@
   font-style: italic;
 }
 .token.deleted {
-  color: #b31d28;
+  color: var(--syntax-deleted);
 }
 
 /* Dark theme: shadcn neutral-dark palette + GitHub Dark for diff/Prism.
@@ -193,6 +202,15 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  --syntax-comment: #8b949e;
+  --syntax-punctuation: #c9d1d9;
+  --syntax-property: #7ee787;
+  --syntax-number: #79c0ff;
+  --syntax-string: #a5d6ff;
+  --syntax-keyword: #ff7b72;
+  --syntax-function: #d2a8ff;
+  --syntax-variable: #ffa657;
+  --syntax-deleted: #ffa198;
 }
 
 .dark .diff-gutter-selected,
@@ -217,55 +235,3 @@
   background-color: oklch(0.34 0.09 25);
 }
 
-/* GitHub Dark Prism palette — parallel to the light block above. */
-.dark .token.comment,
-.dark .token.prolog,
-.dark .token.doctype,
-.dark .token.cdata {
-  color: #8b949e;
-  font-style: italic;
-}
-.dark .token.punctuation {
-  color: #c9d1d9;
-}
-.dark .token.property,
-.dark .token.tag,
-.dark .token.constant,
-.dark .token.symbol {
-  color: #7ee787;
-}
-.dark .token.boolean,
-.dark .token.number {
-  color: #79c0ff;
-}
-.dark .token.selector,
-.dark .token.attr-name,
-.dark .token.string,
-.dark .token.char,
-.dark .token.builtin,
-.dark .token.inserted {
-  color: #a5d6ff;
-}
-.dark .token.operator,
-.dark .token.entity,
-.dark .token.url,
-.dark .language-css .token.string,
-.dark .style .token.string,
-.dark .token.atrule,
-.dark .token.attr-value,
-.dark .token.keyword {
-  color: #ff7b72;
-  background: transparent;
-}
-.dark .token.function,
-.dark .token.class-name {
-  color: #d2a8ff;
-}
-.dark .token.regex,
-.dark .token.important,
-.dark .token.variable {
-  color: #ffa657;
-}
-.dark .token.deleted {
-  color: #ffa198;
-}
