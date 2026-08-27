@@ -12,7 +12,7 @@ const skillSrc = resolve(
   "..",
   ".claude",
   "skills",
-  "askdiff",
+  "quack",
   "SKILL.md",
 );
 const pkgPath = join(__dirname, "package.json");
