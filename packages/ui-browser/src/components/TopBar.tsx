@@ -1,6 +1,6 @@
 import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemePicker } from "./ThemePicker";
 
 const ConnectionDot = () => {
   const conn = useStore((s) => s.conn);
@@ -64,7 +64,7 @@ export const TopBar = () => {
             session {truncSession(sessionId)}
           </Badge>
         )}
-        <ThemeToggle />
+        <ThemePicker />
         <ConnectionDot />
       </div>
     </header>

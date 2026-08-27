@@ -217,6 +217,71 @@
   --syntax-deleted: #ffa198;
 }
 
+/* Dracula — canonical palette + Dracula Neon syntax. Carries the .dark
+   class at runtime so it inherits the dark diff-hunk colors below. */
+[data-theme="dracula"] {
+  --background: #282a36;
+  --foreground: #f8f8f2;
+  --card: #21222c;
+  --card-foreground: #f8f8f2;
+  --popover: #21222c;
+  --popover-foreground: #f8f8f2;
+  --primary: #bd93f9;
+  --primary-foreground: #282a36;
+  --secondary: #44475a;
+  --secondary-foreground: #f8f8f2;
+  --muted: #44475a;
+  --muted-foreground: #a6accd;
+  --accent: #44475a;
+  --accent-foreground: #f8f8f2;
+  --destructive: #ff5555;
+  --destructive-foreground: #282a36;
+  --border: #44475a;
+  --input: #44475a;
+  --ring: #bd93f9;
+  --syntax-comment: #6272a4;
+  --syntax-punctuation: #f8f8f2;
+  --syntax-property: #bd93f9;
+  --syntax-number: #bd93f9;
+  --syntax-string: #f1fa8c;
+  --syntax-keyword: #ff79c6;
+  --syntax-function: #50fa7b;
+  --syntax-variable: #ffb86c;
+  --syntax-deleted: #ff5555;
+}
+
+/* CosmicGirl's Dracula (Neon): Dracula syntax + deep teal-navy chrome. */
+[data-theme="cosmicgirl"] {
+  --background: #0e1419;
+  --foreground: #f8f8f2;
+  --card: #0e1419;
+  --card-foreground: #f8f8f2;
+  --popover: #0e1419;
+  --popover-foreground: #f8f8f2;
+  --primary: #9d7bd8;
+  --primary-foreground: #0e1419;
+  --secondary: #253340;
+  --secondary-foreground: #f8f8f2;
+  --muted: #253340;
+  --muted-foreground: #a6accd;
+  --accent: #574473;
+  --accent-foreground: #f8f8f2;
+  --destructive: #ff5555;
+  --destructive-foreground: #0e1419;
+  --border: #253340;
+  --input: #253340;
+  --ring: #9d7bd8;
+  --syntax-comment: #6272a4;
+  --syntax-punctuation: #f8f8f2;
+  --syntax-property: #bd93f9;
+  --syntax-number: #bd93f9;
+  --syntax-string: #f1fa8c;
+  --syntax-keyword: #ff79c6;
+  --syntax-function: #50fa7b;
+  --syntax-variable: #ffb86c;
+  --syntax-deleted: #ff5555;
+}
+
 .dark .diff-gutter-selected,
 .dark .diff-line:has(.diff-gutter-selected) > .diff-gutter {
   background-color: oklch(0.32 0.05 240);

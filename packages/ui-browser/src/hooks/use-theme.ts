@@ -23,10 +23,5 @@ export const useTheme = () => {
     setThemeState(name);
   };
 
-  // Temporary: kept so ThemeToggle compiles until ThemePicker lands (Task 9).
-  const toggle = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
-  return { theme, setTheme, toggle, themes: THEMES };
+  return { theme, setTheme, themes: THEMES };
 };
