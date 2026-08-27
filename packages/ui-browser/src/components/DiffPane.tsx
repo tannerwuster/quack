@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { parseDiff } from "react-diff-view";
 import { useStore } from "@/lib/store";
 import { filePath } from "@/lib/selection";
 import { FilePane } from "./FilePane";
 import { FileHeader } from "./FileHeader";
 import { Button } from "./ui/button";
+import { readLocal, writeLocal } from "@/lib/persist";
 
 export const DiffPane = () => {
   const diff = useStore((s) => s.diff);
@@ -12,6 +13,9 @@ export const DiffPane = () => {
   const project = useStore((s) => s.project);
   const fileCollapsed = useStore((s) => s.fileCollapsed);
   const scrollRequest = useStore((s) => s.scrollRequest);
+  const [hintDismissed, setHintDismissed] = useState(
+    () => readLocal("askdiff:hint-dismissed") === "1",
+  );
 
   const files = useMemo(() => (diff ? parseDiff(diff.raw) : []), [diff]);
 
@@ -43,6 +47,23 @@ export const DiffPane = () => {
 
   return (
     <div className="space-y-4 p-4">
+      {!hintDismissed && (
+        <div className="flex items-center justify-between rounded-md border bg-accent/40 px-3 py-2 text-xs text-muted-foreground">
+          <span>
+            Hover a line and click the <strong>+</strong> to ask Quack about it.
+          </span>
+          <button
+            type="button"
+            className="ml-3 rounded px-1.5 py-0.5 hover:bg-accent"
+            onClick={() => {
+              writeLocal("askdiff:hint-dismissed", "1");
+              setHintDismissed(true);
+            }}
+          >
+            Got it
+          </button>
+        </div>
+      )}
       {files.map((file) => {
         const path = filePath(file);
         const collapsed = fileCollapsed[path] === true;
