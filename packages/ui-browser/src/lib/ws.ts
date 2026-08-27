@@ -60,6 +60,12 @@ const dispatch = (msg: ServerMessage) => {
         s.pushToast(msg.message);
       }
       return;
+    case "theme-generated":
+      s.themeGenerated(msg.id, msg.palette);
+      return;
+    case "theme-error":
+      s.themeError(msg.id, msg.message);
+      return;
     case "pong":
       return;
   }

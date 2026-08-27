@@ -72,6 +72,14 @@ type Store = {
 
   openAnchors: Record<string, { fromLine: number; toLine: number; chunk: string }>;
 
+  // custom-theme generation (Haiku one-shot)
+  themeGen?: {
+    id: string;
+    status: "pending" | "done" | "error";
+    palette?: Record<string, string>;
+    error?: string;
+  };
+
   // toasts
   toasts: Toast[];
 
@@ -109,6 +117,9 @@ type Store = {
   closeComposer: (file: string, fromLine: number) => void;
   startAsk: (input: AskInput) => string;
   cancel: (askId: string) => void;
+  startThemeGen: (primary: string, secondary: string) => string;
+  themeGenerated: (id: string, palette: Record<string, string>) => void;
+  themeError: (id: string, message: string) => void;
 };
 
 const pickKnown = (
@@ -294,5 +305,26 @@ export const useStore = create<Store>((set, get) => ({
     set((s) => ({
       asks: { ...s.asks, [askId]: { ...ask, status: "cancelled" } },
     }));
+  },
+
+  startThemeGen: (primary, secondary) => {
+    const id = newId();
+    set({ themeGen: { id, status: "pending" } });
+    get()._send({ type: "generate-theme", id, primary, secondary });
+    return id;
+  },
+
+  themeGenerated: (id, palette) => {
+    set((s) =>
+      s.themeGen?.id === id ? { themeGen: { id, status: "done", palette } } : {},
+    );
+  },
+
+  themeError: (id, message) => {
+    set((s) =>
+      s.themeGen?.id === id
+        ? { themeGen: { id, status: "error", error: message } }
+        : {},
+    );
   },
 }));
