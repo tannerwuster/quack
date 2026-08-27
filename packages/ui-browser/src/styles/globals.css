@@ -77,6 +77,20 @@
 }
 .diff-gutter {
   user-select: none;
+  cursor: pointer;
+}
+.diff-gutter:hover {
+  background-color: var(--accent);
+}
+/* Faint + affordance in the gutter; clicking the row opens the composer. */
+.quack-add-comment {
+  margin-left: 4px;
+  font-weight: 700;
+  opacity: 0.25;
+}
+.diff-gutter:hover .quack-add-comment {
+  opacity: 1;
+  color: var(--primary);
 }
 /* In split mode each <tr.diff-line> contains the old AND new cells; only
    the cells whose change is in `selectedChanges` get the -selected class.

@@ -111,6 +111,18 @@ export const FilePane = ({ file }: { file: FileData }) => {
         tokens={tokens}
         widgets={widgets}
         selectedChanges={selectedKeys}
+        renderGutter={({ change, side, renderDefault, wrapInAnchor }) =>
+          wrapInAnchor(
+            <>
+              {renderDefault()}
+              {side === "new" && changeNewLine(change) !== null && (
+                <span className="quack-add-comment" aria-hidden>
+                  +
+                </span>
+              )}
+            </>,
+          )
+        }
         gutterEvents={{
           onMouseDown: ({ change }, event) => {
             if (!change) return;
