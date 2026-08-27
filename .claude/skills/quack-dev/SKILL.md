@@ -1,21 +1,26 @@
 ---
-name: askdiff
-description: Start the askdiff WebSocket server for interactive diff review.
+name: quack-dev
+description: Start the Quack WS server AND a local Vite dev server for in-repo UI development.
 user-invocable: true
 allowed-tools: Bash
 ---
 
-Compute the user's diff, write it to a temp file, then launch the
-`askdiff` CLI in the background pointing at that file.
+Local-dev variant of `/quack`. Starts the WS server **and** Vite (HMR)
+against in-repo TypeScript instead of the published CLI. Vite proxies
+`/ws` to the WS server (port from `ASKDIFF_DEV_WS_TARGET`), so the UI
+uses the same same-origin `new WebSocket('ws://host/ws')` URL as in prod.
 
-> **Keep Steps 1–4 in sync with `.claude/skills/askdiff-dev/SKILL.md`** —
-> only the Step 4c `resolve-session` invocation and Step 5 launch differ
+Use when editing `packages/server` or `packages/ui-browser` for instant
+reload instead of rebuild/republish.
+
+> **Keep Steps 1–4 in sync with `.claude/skills/quack/SKILL.md`** — only
+> the Step 4c `resolve-session` invocation and Step 5 launch differ
 > between the two skills.
 
 ## Step 1 — figure out which diff the user wants (and which session)
 
-Look at the message that invoked this skill. Anything after `/askdiff` is
-free-form natural language that may carry **two** kinds of information:
+Look at the message that invoked this skill. Anything after `/quack-dev`
+is free-form natural language that may carry **two** kinds of information:
 
 1. A **diff description** — what to diff (handled by the table/ladder
    below). This part is what Step 2 turns into a `git diff` command.
@@ -28,12 +33,12 @@ Either or both may be empty. The diff-description part may be empty
 absent. Treat them independently — first identify and set aside the
 session hint, then pass the rest to the diff resolution below.
 
-**Use only the current `/askdiff` line's args.** Read `<command-args>`
+**Use only the current `/quack-dev` line's args.** Read `<command-args>`
 strictly from the message that invoked this skill — nothing else. Do
 *not* infer or carry over args from earlier conversation turns, from
 `SessionStart` hook context (e.g. a "Previous session summary" block
-that quotes a prior `/askdiff` invocation verbatim), from CLAUDE.md, or
-from memory. If the current line has no text after `/askdiff`, both
+that quotes a prior `/quack` invocation verbatim), from CLAUDE.md, or
+from memory. If the current line has no text after `/quack-dev`, both
 `diff_description` and `session_hint` are empty/none — that means
 working tree + invoking session, full stop.
 
@@ -112,10 +117,10 @@ search ladder are already validated by virtue of `git log` finding them.)
 
 ### Session hint (optional)
 
-By default `/askdiff` attaches the WS server to the **invoking** session
-(the one running this skill). The user may override that by carrying a
-phrase about the target session in their input. Decompose the input into
-two parts:
+By default `/quack-dev` attaches the WS server to the **invoking**
+session (the one running this skill). The user may override that by
+carrying a phrase about the target session in their input. Decompose the
+input into two parts:
 
 - `diff_description` — what to diff (everything Step 1's table/ladder uses)
 - `session_hint` — one of `none`, `explicit-id <uuid-or-prefix>`, or
@@ -150,7 +155,7 @@ The session hint is consumed in Step 4. Steps 2 and 3 use only
 
 First resolve the parent Claude Code session and project cwd. All `/tmp`
 paths the skill writes (diff file, server log, dev-only UI log/pid file)
-key off the session UUID so concurrent `/askdiff` runs from different
+key off the session UUID so concurrent `/quack` runs from different
 sessions don't collide:
 
 ```bash
@@ -166,7 +171,7 @@ suffix="${session_id:-pid-$$}"
 diff_file="/tmp/askdiff-diff.$suffix"
 ```
 
-No random component on the diff file — re-invoking `/askdiff` from the
+No random component on the diff file — re-invoking `/quack` from the
 same session overwrites in place, which is exactly what a refresh would
 do. Different sessions get different suffixes and don't collide. (If
 launched outside a CC session, `session_id` is empty and the suffix
@@ -272,17 +277,14 @@ AskUserQuestion branches: 0 matches → "Use current session" or "Cancel"
 
 ### 4c. Keywords → resolve-session, decide, possibly ask
 
-If `session_hint` is `keywords <a, b, c, …>`, call the CLI's
+If `session_hint` is `keywords <a, b, c, …>`, call the in-repo CLI's
 `resolve-session` subcommand. It searches recent project JSONLs (mtime
 −30d, excluding the invoking session, top 5 by hit count) and prints
 single-line JSON: `{"candidates":[{"uuid":"…","count":N,"age":"…"}, …]}`.
 
 ```bash
-# Pinned by the build script for the npm tarball; in-repo stays "latest".
-ASKDIFF_VERSION="latest"
-
 results=$(
-  npx -y askdiff@"$ASKDIFF_VERSION" resolve-session \
+  pnpm --filter askdiff exec tsx src/index.ts resolve-session \
     --cwd "$project_cwd" \
     --invoking "$session_id" \
     --diff-file "$diff_file" \
@@ -314,27 +316,28 @@ Read `$results` and route on `.candidates`:
 `--top`). Surface 0/unclear results via AskUserQuestion; re-run only on
 user request.
 
-## Step 5 — launch
+## Step 5 — launch (in-repo)
 
-Run as a single Bash command. Substitute `EXTRA_DIFF_FILE` and
-`EXTRA_DIFF_LABEL` literally with the values from Step 2/3.
+Run as a single Bash command so the discovered values survive into the
+launch. Substitute `EXTRA_DIFF_FILE` and `EXTRA_DIFF_LABEL` literally with
+the values from Step 2/3.
 
 ```
 set +e
 
-# Pinned by the build script for the npm tarball; in-repo stays "latest".
-ASKDIFF_VERSION="latest"
-
-# Filled in by Steps 2/3 — keep Step 2's preamble (session_id, project_cwd,
-# suffix) and Step 4's resolution (attached_session, session_source) above.
+# Filled in by Step 2/3 (session_id, project_cwd, suffix come from Step 2's
+# preamble — keep that block above this one in your final invocation).
 EXTRA_DIFF_FILE=""
 EXTRA_DIFF_LABEL=""
 
 log_file="/tmp/askdiff.$suffix.log"
+ui_log="/tmp/askdiff-ui.$suffix.log"
+ui_pid_file="/tmp/askdiff-ui.$suffix.pid"
 pid_file="/tmp/askdiff.$suffix.pid"
 
-# 1. Kill any previous server for this session and reuse its port — keeps
-#    the open browser tab valid (the WS auto-reconnects).
+# 1. Kill any previous server for this session and reuse its port —
+#    Vite's /ws proxy is locked to whatever port we passed when Vite
+#    first started, so reusing keeps the open browser tab valid.
 saved_port=""
 if [ -f "$pid_file" ]; then
   read -r old_pid saved_port < "$pid_file" 2>/dev/null
@@ -350,66 +353,82 @@ if [ -f "$pid_file" ]; then
   rm -f "$pid_file"
 fi
 
-# 2. Launch. Reuse port if we have one; otherwise the CLI picks 7837+.
-port_arg=""
-[ -n "$saved_port" ] && port_arg="--port $saved_port"
+# 2. Pick a port: reuse the saved one if present, else pick from 7837 up.
+if [ -n "$saved_port" ]; then
+  port="$saved_port"
+else
+  port=7837
+  while lsof -iTCP:$port -sTCP:LISTEN -t >/dev/null 2>&1; do
+    port=$((port + 1))
+  done
+fi
 
+# 3. Start the WS server (in-repo via tsx).
 cd "$project_cwd" \
-  && ASKDIFF_SESSION_ID="$attached_session" \
+  && PORT=$port \
+     ASKDIFF_SESSION_ID="$attached_session" \
      ASKDIFF_PROJECT_CWD="$project_cwd" \
      ASKDIFF_DIFF_FILE="$EXTRA_DIFF_FILE" \
      ASKDIFF_DIFF_LABEL="$EXTRA_DIFF_LABEL" \
      ASKDIFF_DIFF_VOLATILE="${volatile:-0}" \
-     nohup npx -y askdiff@"$ASKDIFF_VERSION" --no-open $port_arg > "$log_file" 2>&1 &
+     nohup pnpm --filter @askdiff/server exec tsx src/main.ts > "$log_file" 2>&1 &
 new_pid=$!
 disown
+sleep 1.5
+echo "$new_pid $port" > "$pid_file"
+head -5 "$log_file"
 
-# Wait for the listening line. (`command grep` — see Step 4c footguns.)
+# 4. Start Vite only if our previous one isn't still alive (per session).
+#    Pass ASKDIFF_DEV_WS_TARGET so Vite's proxy points at the chosen port.
+ui_running=false
+if [ -f "$ui_pid_file" ]; then
+  prev_pid=$(cat "$ui_pid_file" 2>/dev/null)
+  if [ -n "$prev_pid" ] && kill -0 "$prev_pid" 2>/dev/null; then
+    ui_running=true
+  fi
+fi
+if ! $ui_running; then
+  : > "$ui_log"
+  cd "$project_cwd" && ASKDIFF_DEV_WS_TARGET="ws://localhost:${port}" \
+    nohup pnpm --filter @askdiff/ui-browser dev > "$ui_log" 2>&1 &
+  echo $! > "$ui_pid_file"
+  disown
+fi
+
+# 5. Wait for Vite's "Local: http://localhost:XXXX/" line.
+#    (`command grep` — see Step 4c footguns.)
 for _ in $(seq 1 60); do
-  command grep -q "listening on" "$log_file" 2>/dev/null && break
+  command grep -q "Local:" "$ui_log" 2>/dev/null && break
   sleep 0.25
 done
 
-# 3. Persist <pid> <port> for the next /askdiff invocation to find and replace.
-port=$(sed -nE 's|.*listening on http://localhost:([0-9]+).*|\1|p' "$log_file" | head -1)
-[ -z "$port" ] && port=7837
-echo "$new_pid $port" > "$pid_file"
+vite_port=$(sed -E -n 's|.*Local:[^0-9]*([0-9]+)/?.*|\1|p' "$ui_log" | head -1)
+[ -z "$vite_port" ] && vite_port=5173
 
-url="http://localhost:$port/"
+ui_url="http://localhost:${vite_port}/"
 
 # Auto-open only on first launch — refresh re-invocations have a tab open.
 if [ -z "$saved_port" ]; then
-  (open "$url" >/dev/null 2>&1 || xdg-open "$url" >/dev/null 2>&1) &
+  (open "$ui_url" >/dev/null 2>&1 || xdg-open "$ui_url" >/dev/null 2>&1) &
 fi
 
-head -10 "$log_file"
 echo ""
 [ -n "$saved_port" ] && echo "Refreshed: same port, new diff. Browser tab will auto-reconnect."
-echo "UI: $url"
-echo "Log: $log_file"
-echo "PID: $new_pid (saved to $pid_file)"
-
-# 4. Update check (after launch, never blocking; skipped at "latest" or
-#    when ASKDIFF_SKIP_UPDATE_CHECK is set; network failures silently ignored).
-if [ -z "$ASKDIFF_SKIP_UPDATE_CHECK" ] && [ "$ASKDIFF_VERSION" != "latest" ]; then
-  latest=$(curl -fsSL --max-time 2 https://registry.npmjs.org/askdiff/latest 2>/dev/null \
-    | sed -n 's/.*"version":"\([^"]*\)".*/\1/p' | head -1)
-  if [ -n "$latest" ] && [ "$latest" != "$ASKDIFF_VERSION" ]; then
-    echo ""
-    echo "── A new version of askdiff is available ──"
-    echo "  installed: $ASKDIFF_VERSION"
-    echo "  latest:    $latest"
-    echo "  to update: npx -y askdiff@latest install-skill --force"
-    echo "             (add --global if you installed user-level)"
-  fi
-fi
+echo "UI: $ui_url"
+echo "WS log: $log_file"
+echo "UI log: $ui_log"
+echo "WS PID: $new_pid (saved to $pid_file)"
 ```
 
-The user already sees `UI:` / `Log:` / `PID:` / `Refreshed:` / the
-new-version block in the bash output. After launch, only narrate:
+The user already sees `UI:` / `WS log:` / `UI log:` / `WS PID:` /
+`Refreshed:` in the bash output. After launch, only narrate:
 
 - if `$session_source` is `explicit` or `matched`, say so (e.g.
   "attached to matched session 322bc90a (was: invoking)") so the user
   knows asks aren't landing in the current session's transcript
-- the new-version block verbatim if present — the upgrade command is
-  copyable as-is, no `AskUserQuestion` needed
+
+The WS server idle-shuts after 5 min with no connected clients;
+re-invoking `/quack-dev` kills the previous WS server for this session
+before starting a new one. Vite stays running across re-invocations
+(HMR is the whole point) — kill it via Activity Monitor or
+`pkill -f 'ui-browser.*vite'` if needed.
