@@ -1,3 +1,5 @@
+import { readLocal, writeLocal } from "@/lib/persist";
+
 export const TOKEN_KEYS = [
   "background", "foreground", "card", "card-foreground",
   "popover", "popover-foreground", "primary", "primary-foreground",
@@ -108,4 +110,61 @@ export const paletteFromConfig = (raw: string): Palette => {
     out[k] = v.trim();
   }
   return out;
+};
+
+const STYLE_ID = "quack-custom-theme";
+const THEMES_KEY = "askdiff:custom-themes";
+const ACTIVE_KEY = "askdiff:custom-active";
+
+const paletteToCss = (p: Palette): string => {
+  const decls = TOKEN_KEYS.map((k) => (p[k] ? `  --${k}: ${p[k] ?? ""};` : ""))
+    .filter(Boolean)
+    .join("\n");
+  return `:root[data-theme="custom"] {\n${decls}\n}`;
+};
+
+const injectCustomStyle = (p: Palette): void => {
+  let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+  if (!el) {
+    el = document.createElement("style");
+    el.id = STYLE_ID;
+    document.head.appendChild(el);
+  }
+  el.textContent = paletteToCss(p);
+  const root = document.documentElement;
+  root.setAttribute("data-theme", "custom");
+  root.classList.add("dark");
+};
+
+/** Apply a custom palette for live preview, without persisting it. */
+export const previewCustomTheme = (p: Palette): void => {
+  injectCustomStyle(p);
+};
+
+/** Apply a custom palette and persist it as the active theme. */
+export const activateCustomTheme = (p: Palette): void => {
+  injectCustomStyle(p);
+  writeLocal("askdiff:theme", "custom");
+  writeLocal(ACTIVE_KEY, JSON.stringify(p));
+};
+
+/** Remove the injected custom style (when switching to a built-in theme). */
+export const clearCustomStyle = (): void => {
+  document.getElementById(STYLE_ID)?.remove();
+};
+
+export const loadCustomThemes = (): Record<string, Palette> => {
+  const raw = readLocal(THEMES_KEY);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as Record<string, Palette>;
+  } catch {
+    return {};
+  }
+};
+
+export const saveCustomTheme = (name: string, p: Palette): void => {
+  const all = loadCustomThemes();
+  all[name] = p;
+  writeLocal(THEMES_KEY, JSON.stringify(all));
 };

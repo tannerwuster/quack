@@ -10,12 +10,30 @@
     <script>
       (function () {
         try {
+          var root = document.documentElement;
           var name = localStorage.getItem("askdiff:theme");
+          if (name === "custom") {
+            root.setAttribute("data-theme", "custom");
+            root.classList.add("dark");
+            var active = localStorage.getItem("askdiff:custom-active");
+            if (active) {
+              var p = JSON.parse(active);
+              var css = ':root[data-theme="custom"]{';
+              for (var k in p) {
+                if (Object.prototype.hasOwnProperty.call(p, k)) css += "--" + k + ":" + p[k] + ";";
+              }
+              css += "}";
+              var st = document.createElement("style");
+              st.id = "quack-custom-theme";
+              st.textContent = css;
+              document.head.appendChild(st);
+            }
+            return;
+          }
           var known = ["light", "dark", "dracula", "cosmicgirl"];
           if (known.indexOf(name) === -1) {
             name = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
           }
-          var root = document.documentElement;
           root.setAttribute("data-theme", name);
           if (name !== "light") root.classList.add("dark");
         } catch (e) {}

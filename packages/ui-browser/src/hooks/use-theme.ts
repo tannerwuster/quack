@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { writeLocal } from "@/lib/persist";
+import { clearCustomStyle } from "@/lib/palette";
 
 export type ThemeName = "light" | "dark" | "dracula" | "cosmicgirl";
 
@@ -7,15 +8,14 @@ export const THEMES: ThemeName[] = ["light", "dark", "dracula", "cosmicgirl"];
 
 const STORAGE_KEY = "askdiff:theme";
 
-const current = (): ThemeName => {
-  const attr = document.documentElement.getAttribute("data-theme");
-  return (THEMES as string[]).includes(attr ?? "") ? (attr as ThemeName) : "light";
-};
+// May return a built-in name or "custom".
+const current = (): string => document.documentElement.getAttribute("data-theme") ?? "light";
 
 export const useTheme = () => {
-  const [theme, setThemeState] = useState<ThemeName>(current);
+  const [theme, setThemeState] = useState<string>(current);
 
   const setTheme = (name: ThemeName) => {
+    clearCustomStyle();
     const root = document.documentElement;
     root.setAttribute("data-theme", name);
     root.classList.toggle("dark", name !== "light");

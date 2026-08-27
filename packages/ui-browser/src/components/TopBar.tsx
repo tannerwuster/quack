@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { ThemePicker } from "./ThemePicker";
+import { ThemeEditor } from "./ThemeEditor";
 
 const ConnectionDot = () => {
   const conn = useStore((s) => s.conn);
@@ -28,6 +30,7 @@ export const TopBar = () => {
   const protocol = useStore((s) => s.protocol);
   const diffLabel = useStore((s) => s.diff?.label);
   const sessionId = useStore((s) => s.sessionId);
+  const [themeRev, setThemeRev] = useState(0);
 
   // Always advertise *what* the user is reviewing — when the skill didn't
   // pre-compute a diff, the server falls back to the working tree, so that
@@ -64,7 +67,12 @@ export const TopBar = () => {
             session {truncSession(sessionId)}
           </Badge>
         )}
-        <ThemePicker />
+        <ThemePicker rev={themeRev} />
+        <ThemeEditor
+          onSaved={() => {
+            setThemeRev((r) => r + 1);
+          }}
+        />
         <ConnectionDot />
       </div>
     </header>
