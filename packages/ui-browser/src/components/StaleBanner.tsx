@@ -19,7 +19,7 @@ export const StaleBanner = () => {
         </strong>{" "}
         changed since this diff was captured. Re-run{" "}
         <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[0.7rem] dark:bg-amber-900/40">
-          /askdiff
+          /quack
         </code>{" "}
         in Claude Code to refresh.
       </span>

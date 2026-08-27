@@ -4,6 +4,10 @@
 /* react-diff-view ships its own CSS; loaded here so widgets see it. */
 @import "react-diff-view/style/index.css";
 
+/* Key `dark:` utilities off the .dark class (set for every dark-family
+   theme), not prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);

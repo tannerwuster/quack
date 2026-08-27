@@ -10,11 +10,14 @@
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem("askdiff:theme");
-          var theme = stored === "light" || stored === "dark"
-            ? stored
-            : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-          if (theme === "dark") document.documentElement.classList.add("dark");
+          var name = localStorage.getItem("askdiff:theme");
+          var known = ["light", "dark", "dracula", "cosmicgirl"];
+          if (known.indexOf(name) === -1) {
+            name = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+          }
+          var root = document.documentElement;
+          root.setAttribute("data-theme", name);
+          if (name !== "light") root.classList.add("dark");
         } catch (e) {}
       })();
     </script>

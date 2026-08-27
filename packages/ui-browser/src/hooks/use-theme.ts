@@ -1,26 +1,32 @@
 import { useState } from "react";
+import { writeLocal } from "@/lib/persist";
 
-type Theme = "light" | "dark";
+export type ThemeName = "light" | "dark" | "dracula" | "cosmicgirl";
+
+export const THEMES: ThemeName[] = ["light", "dark", "dracula", "cosmicgirl"];
 
 const STORAGE_KEY = "askdiff:theme";
 
-const currentTheme = (): Theme =>
-  document.documentElement.classList.contains("dark") ? "dark" : "light";
+const current = (): ThemeName => {
+  const attr = document.documentElement.getAttribute("data-theme");
+  return (THEMES as string[]).includes(attr ?? "") ? (attr as ThemeName) : "light";
+};
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState<Theme>(currentTheme);
+  const [theme, setThemeState] = useState<ThemeName>(current);
 
-  const toggle = () => {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    document.documentElement.classList.toggle("dark", next === "dark");
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // localStorage may be unavailable (private mode, sandboxed iframe);
-      // theme still applies for the session, just won't persist.
-    }
-    setTheme(next);
+  const setTheme = (name: ThemeName) => {
+    const root = document.documentElement;
+    root.setAttribute("data-theme", name);
+    root.classList.toggle("dark", name !== "light");
+    writeLocal(STORAGE_KEY, name);
+    setThemeState(name);
   };
 
-  return { theme, toggle };
+  // Temporary: kept so ThemeToggle compiles until ThemePicker lands (Task 9).
+  const toggle = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
+  return { theme, setTheme, toggle, themes: THEMES };
 };
