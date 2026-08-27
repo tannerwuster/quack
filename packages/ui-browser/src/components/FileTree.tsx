@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
 import { parseDiff } from "react-diff-view";
 import { useStore } from "@/lib/store";
@@ -7,11 +7,20 @@ import { fileBadge } from "@/lib/file-badge";
 import { buildFileTree, countLeaves, type TreeDir, type TreeFile, type TreeNode } from "@/lib/file-tree";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { readLocal, writeLocal } from "@/lib/persist";
 
 const ROW_PAD = 12;
 
+const MIN_W = 180;
+const MAX_W = 520;
+const clampW = (n: number) => Math.min(MAX_W, Math.max(MIN_W, n));
+
 export const FileTree = () => {
   const diff = useStore((s) => s.diff);
+  const [width, setWidth] = useState(() => {
+    const raw = Number(readLocal("askdiff:sidebar-width"));
+    return Number.isFinite(raw) && raw >= MIN_W && raw <= MAX_W ? raw : 256;
+  });
 
   const files = useMemo(() => (diff ? parseDiff(diff.raw) : []), [diff]);
   const tree = useMemo(() => buildFileTree(files), [files]);
@@ -22,7 +31,10 @@ export const FileTree = () => {
   );
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r bg-card">
+    <aside
+      className="relative flex shrink-0 flex-col border-r bg-card"
+      style={{ width }}
+    >
       <div className="flex items-center justify-between border-b px-3 py-2 text-xs font-medium uppercase text-muted-foreground">
         <span>Files {files.length > 0 && `(${String(files.length)})`}</span>
         {files.length > 0 && (
@@ -38,6 +50,27 @@ export const FileTree = () => {
           ))}
         </ul>
       </ScrollArea>
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          const startX = e.clientX;
+          const startW = width;
+          const onMove = (ev: MouseEvent) => {
+            setWidth(clampW(startW + ev.clientX - startX));
+          };
+          const onUp = (ev: MouseEvent) => {
+            writeLocal("askdiff:sidebar-width", String(clampW(startW + ev.clientX - startX)));
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+          };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        }}
+        className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/40"
+      />
     </aside>
   );
 };
