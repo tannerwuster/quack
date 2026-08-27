@@ -6,10 +6,15 @@ import {
 } from "node:http";
 import type { Socket } from "node:net";
 import { WebSocketServer, type WebSocket } from "ws";
-import { ClaudeCliError, streamAnswer } from "./claude";
+import { ClaudeCliError, streamAnswer, generateTheme } from "./claude";
 import { DiffError, getDiff } from "./util/diff";
 import { checkStaleness } from "./util/staleness";
-import { PROTOCOL_VERSION, parseClientMessage, type AskMessage } from "@askdiff/protocol";
+import {
+  PROTOCOL_VERSION,
+  parseClientMessage,
+  type AskMessage,
+  type GenerateThemeMessage,
+} from "@askdiff/protocol";
 import { DEFAULT_HOST, DEFAULT_IDLE_SHUTDOWN_MS } from "./util/constants";
 import { send } from "./util/ws";
 
@@ -115,6 +120,38 @@ async function handleAsk(
   }
 }
 
+async function handleGenerateTheme(
+  ws: WebSocket,
+  state: ServerState,
+  msg: GenerateThemeMessage,
+  controllers: Map<string, AbortController>,
+): Promise<void> {
+  if (controllers.has(msg.id)) {
+    send(ws, { type: "theme-error", id: msg.id, message: `duplicate id: ${msg.id}` });
+    return;
+  }
+
+  const controller = new AbortController();
+  controllers.set(msg.id, controller);
+
+  try {
+    const palette = await generateTheme({
+      cwd: state.cwd,
+      primary: msg.primary,
+      secondary: msg.secondary,
+      signal: controller.signal,
+    });
+    if (!controller.signal.aborted) {
+      send(ws, { type: "theme-generated", id: msg.id, palette });
+    }
+  } catch (err) {
+    if (controller.signal.aborted) return;
+    send(ws, { type: "theme-error", id: msg.id, message: errorMessage(err) });
+  } finally {
+    controllers.delete(msg.id);
+  }
+}
+
 function errorMessage(err: unknown): string {
   if (err instanceof ClaudeCliError) return err.message;
   if (err instanceof DiffError) return err.message;
@@ -209,6 +246,9 @@ export async function startServer(opts: StartServerOptions): Promise<ServerHandl
       switch (msg.type) {
         case "ask":
           void handleAsk(ws, state, msg, controllers);
+          return;
+        case "generate-theme":
+          void handleGenerateTheme(ws, state, msg, controllers);
           return;
         case "cancel": {
           const controller = controllers.get(msg.id);

@@ -10,11 +10,14 @@ import type {
   DiffRequestMessageSchema,
   DoneMessageSchema,
   ErrorMessageSchema,
+  GenerateThemeMessageSchema,
   HelloMessageSchema,
   PingMessageSchema,
   PongMessageSchema,
   ServerMessageSchema,
   SessionMessageSchema,
+  ThemeErrorMessageSchema,
+  ThemeGeneratedMessageSchema,
 } from "./schemas";
 
 export type DiffHunk = z.infer<typeof DiffHunkSchema>;
@@ -24,6 +27,7 @@ export type AskMessage = z.infer<typeof AskMessageSchema>;
 export type CancelMessage = z.infer<typeof CancelMessageSchema>;
 export type DiffRequestMessage = z.infer<typeof DiffRequestMessageSchema>;
 export type PingMessage = z.infer<typeof PingMessageSchema>;
+export type GenerateThemeMessage = z.infer<typeof GenerateThemeMessageSchema>;
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 
 export type HelloMessage = z.infer<typeof HelloMessageSchema>;
@@ -33,4 +37,6 @@ export type DoneMessage = z.infer<typeof DoneMessageSchema>;
 export type ErrorMessage = z.infer<typeof ErrorMessageSchema>;
 export type PongMessage = z.infer<typeof PongMessageSchema>;
 export type SessionMessage = z.infer<typeof SessionMessageSchema>;
+export type ThemeGeneratedMessage = z.infer<typeof ThemeGeneratedMessageSchema>;
+export type ThemeErrorMessage = z.infer<typeof ThemeErrorMessageSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;

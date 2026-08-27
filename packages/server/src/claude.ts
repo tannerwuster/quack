@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { THEME_TOKEN_KEYS } from "@askdiff/protocol";
 import type { AskMessage } from "@askdiff/protocol";
 
 export class ClaudeCliError extends Error {
@@ -175,3 +176,98 @@ const extractApiError = (line: string): string | null => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+export interface GenerateThemeParams {
+  cwd: string;
+  primary: string;
+  secondary: string;
+  signal: AbortSignal;
+}
+
+// A cheap, NON-resume one-shot on Haiku: no --resume means a fresh
+// throwaway context, so the review session's tokens are never loaded.
+export async function generateTheme(
+  params: GenerateThemeParams,
+): Promise<Record<string, string>> {
+  const prompt = buildThemePrompt(params.primary, params.secondary);
+  const args = ["-p", "--model", "haiku"];
+
+  const child = spawn("claude", args, {
+    cwd: params.cwd,
+    stdio: ["pipe", "pipe", "pipe"],
+    env: childEnv(),
+  });
+
+  const onAbort = () => {
+    if (!child.killed) child.kill("SIGTERM");
+  };
+  params.signal.addEventListener("abort", onAbort);
+
+  const stderrChunks: string[] = [];
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", (chunk: string) => {
+    stderrChunks.push(chunk);
+  });
+
+  const exitPromise = new Promise<number | null>((resolve) => {
+    child.on("close", (code) => {
+      resolve(code);
+    });
+  });
+
+  child.stdin.end(prompt);
+
+  let out = "";
+  try {
+    child.stdout.setEncoding("utf8");
+    for await (const chunk of child.stdout) out += chunk as string;
+    const code = await exitPromise;
+    if (params.signal.aborted) throw new ClaudeCliError("theme generation aborted");
+    if (code !== 0) {
+      const stderr = stderrChunks.join("").trim().slice(-500);
+      throw new ClaudeCliError(
+        `claude exited with code ${String(code)}${stderr ? `: ${stderr}` : ""}`,
+      );
+    }
+  } finally {
+    params.signal.removeEventListener("abort", onAbort);
+    if (!child.killed) child.kill("SIGTERM");
+  }
+
+  return parseThemeOutput(out);
+}
+
+const buildThemePrompt = (primary: string, secondary: string): string =>
+  `You are a UI theme designer. Design a cohesive DARK theme palette from a primary and a secondary color.
+
+Return ONLY a single JSON object — no prose, no markdown fences — whose keys are EXACTLY these CSS variable names (without the leading --):
+${THEME_TOKEN_KEYS.join(", ")}.
+
+Each value must be a valid CSS color (hex like #0e1419 or an hsl(...) string). Requirements:
+- Dark background, light foreground; ensure strong contrast and readability.
+- Use the primary color for --primary and --ring, the secondary for --accent.
+- The --syntax-* values form a syntax-highlight palette that must stay legible on the background.
+
+primary: ${primary}
+secondary: ${secondary}`;
+
+const parseThemeOutput = (out: string): Record<string, string> => {
+  const match = /\{[\s\S]*\}/.exec(out);
+  if (match === null) throw new ClaudeCliError("no JSON object in theme output");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(match[0]);
+  } catch (err) {
+    throw new ClaudeCliError("theme output was not valid JSON", err);
+  }
+  if (!isRecord(parsed)) throw new ClaudeCliError("theme output was not an object");
+  const palette: Record<string, string> = {};
+  for (const key of THEME_TOKEN_KEYS) {
+    const v = parsed[key];
+    if (typeof v === "string") palette[key] = v;
+  }
+  if (Object.keys(palette).length === 0) {
+    throw new ClaudeCliError("theme output had no usable colors");
+  }
+  return palette;
+};

@@ -3,6 +3,20 @@ import type { ClientMessage } from "./types";
 
 export const PROTOCOL_VERSION = "askdiff/1";
 
+// The CSS-variable names (without the leading --) a custom theme fills.
+// Shared so the server's theme-generation prompt and the UI agree on the
+// palette shape.
+export const THEME_TOKEN_KEYS = [
+  "background", "foreground", "card", "card-foreground",
+  "popover", "popover-foreground", "primary", "primary-foreground",
+  "secondary", "secondary-foreground", "muted", "muted-foreground",
+  "accent", "accent-foreground", "destructive", "destructive-foreground",
+  "border", "input", "ring",
+  "syntax-comment", "syntax-punctuation", "syntax-property", "syntax-number",
+  "syntax-string", "syntax-keyword", "syntax-function", "syntax-variable",
+  "syntax-deleted",
+] as const;
+
 export const DiffHunkSchema = z.object({
   from_line: z.number().int().nonnegative(),
   to_line: z.number().int().nonnegative(),
@@ -38,11 +52,19 @@ export const PingMessageSchema = z.object({
   type: z.literal("ping"),
 });
 
+export const GenerateThemeMessageSchema = z.object({
+  type: z.literal("generate-theme"),
+  id: z.string().min(1),
+  primary: z.string().min(1),
+  secondary: z.string().min(1),
+});
+
 export const ClientMessageSchema = z.discriminatedUnion("type", [
   AskMessageSchema,
   CancelMessageSchema,
   DiffRequestMessageSchema,
   PingMessageSchema,
+  GenerateThemeMessageSchema,
 ]);
 
 export const HelloMessageSchema = z.object({
@@ -101,6 +123,18 @@ export const SessionMessageSchema = z.object({
   session_id: z.string().min(1),
 });
 
+export const ThemeGeneratedMessageSchema = z.object({
+  type: z.literal("theme-generated"),
+  id: z.string().min(1),
+  palette: z.record(z.string(), z.string()),
+});
+
+export const ThemeErrorMessageSchema = z.object({
+  type: z.literal("theme-error"),
+  id: z.string().min(1),
+  message: z.string(),
+});
+
 export const ServerMessageSchema = z.discriminatedUnion("type", [
   HelloMessageSchema,
   DiffMessageSchema,
@@ -109,6 +143,8 @@ export const ServerMessageSchema = z.discriminatedUnion("type", [
   ErrorMessageSchema,
   PongMessageSchema,
   SessionMessageSchema,
+  ThemeGeneratedMessageSchema,
+  ThemeErrorMessageSchema,
 ]);
 
 export type ParseResult<T> =

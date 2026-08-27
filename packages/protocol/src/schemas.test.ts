@@ -10,12 +10,16 @@ import {
   DiffRequestMessageSchema,
   DoneMessageSchema,
   ErrorMessageSchema,
+  GenerateThemeMessageSchema,
   HelloMessageSchema,
   PingMessageSchema,
   PongMessageSchema,
   PROTOCOL_VERSION,
   ServerMessageSchema,
   SessionMessageSchema,
+  THEME_TOKEN_KEYS,
+  ThemeErrorMessageSchema,
+  ThemeGeneratedMessageSchema,
   parseClientMessage,
 } from "./schemas";
 
@@ -327,5 +331,54 @@ describe("ServerMessageSchema (discriminated union)", () => {
 
   it("rejects an unknown type", () => {
     expect(ServerMessageSchema.safeParse({ type: "unknown" }).success).toBe(false);
+  });
+});
+
+describe("GenerateThemeMessageSchema", () => {
+  const valid = {
+    type: "generate-theme",
+    id: "t1",
+    primary: "#bd93f9",
+    secondary: "#50fa7b",
+  };
+
+  it("accepts a valid generate-theme message", () => {
+    expect(GenerateThemeMessageSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("is part of the client message union", () => {
+    const r = parseClientMessage(JSON.stringify(valid));
+    expect(r.ok).toBe(true);
+  });
+
+  it("rejects a missing primary", () => {
+    const { primary: _omit, ...rest } = valid;
+    expect(GenerateThemeMessageSchema.safeParse(rest).success).toBe(false);
+  });
+});
+
+describe("theme server messages", () => {
+  it("accepts theme-generated with a palette", () => {
+    const msg = {
+      type: "theme-generated",
+      id: "t1",
+      palette: { background: "#0e1419", primary: "#bd93f9" },
+    };
+    expect(ThemeGeneratedMessageSchema.safeParse(msg).success).toBe(true);
+    expect(ServerMessageSchema.safeParse(msg).success).toBe(true);
+  });
+
+  it("accepts theme-error with a message", () => {
+    const msg = { type: "theme-error", id: "t1", message: "nope" };
+    expect(ThemeErrorMessageSchema.safeParse(msg).success).toBe(true);
+    expect(ServerMessageSchema.safeParse(msg).success).toBe(true);
+  });
+});
+
+describe("THEME_TOKEN_KEYS", () => {
+  it("lists the custom-theme CSS variables", () => {
+    expect(THEME_TOKEN_KEYS).toContain("background");
+    expect(THEME_TOKEN_KEYS).toContain("syntax-keyword");
+    expect(THEME_TOKEN_KEYS.length).toBeGreaterThan(20);
   });
 });

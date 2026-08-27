@@ -1,15 +1,9 @@
+import { THEME_TOKEN_KEYS } from "@askdiff/protocol";
 import { readLocal, writeLocal } from "@/lib/persist";
 
-export const TOKEN_KEYS = [
-  "background", "foreground", "card", "card-foreground",
-  "popover", "popover-foreground", "primary", "primary-foreground",
-  "secondary", "secondary-foreground", "muted", "muted-foreground",
-  "accent", "accent-foreground", "destructive", "destructive-foreground",
-  "border", "input", "ring",
-  "syntax-comment", "syntax-punctuation", "syntax-property", "syntax-number",
-  "syntax-string", "syntax-keyword", "syntax-function", "syntax-variable",
-  "syntax-deleted",
-] as const;
+// Single source of truth lives in the protocol package (shared with the
+// server's theme-generation prompt).
+export const TOKEN_KEYS = THEME_TOKEN_KEYS;
 
 export type Palette = Record<string, string>;
 
