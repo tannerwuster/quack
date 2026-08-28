@@ -63,3 +63,24 @@ describe("setAskModel", () => {
     expect(useStore.getState().askModel).toBeUndefined();
   });
 });
+
+describe("sidebar collapse", () => {
+  beforeEach(() => {
+    useStore.setState({ sidebarCollapsed: false });
+  });
+
+  it("starts expanded and toggles both ways", () => {
+    expect(useStore.getState().sidebarCollapsed).toBe(false);
+    useStore.getState().toggleSidebar();
+    expect(useStore.getState().sidebarCollapsed).toBe(true);
+    useStore.getState().toggleSidebar();
+    expect(useStore.getState().sidebarCollapsed).toBe(false);
+  });
+
+  it("sets an explicit state without toggling", () => {
+    useStore.getState().setSidebarCollapsed(true);
+    expect(useStore.getState().sidebarCollapsed).toBe(true);
+    useStore.getState().setSidebarCollapsed(true);
+    expect(useStore.getState().sidebarCollapsed).toBe(true);
+  });
+});

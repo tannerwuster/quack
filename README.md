@@ -130,6 +130,7 @@ Press `?` in the viewer for the full list:
 
 | Key | Action |
 |---|---|
+| `⌘B` / `Ctrl+B` | Collapse / expand the file tree |
 | `j` / `]` | Next file |
 | `k` / `[` | Previous file |
 | `n` | Next unresolved comment |
@@ -143,10 +144,11 @@ Press `?` in the viewer for the full list:
 
 ### Reading controls
 
-Split and unified diff modes, line wrapping, a resizable file tree with
-file-type icons and a filter box, per-file "viewed" checkmarks, and a
-review-progress indicator in the top bar. Every one of these persists
-across runs.
+Split and unified diff modes, line wrapping, and an IDE-style file tree —
+resizable, collapsible with `⌘B` (`Ctrl+B` on Windows/Linux) or the panel
+button in the top bar, with file-type icons and a filter box. Plus per-file
+"viewed" checkmarks and a review-progress indicator in the top bar. Every one
+of these persists across runs.
 
 ### Themes
 

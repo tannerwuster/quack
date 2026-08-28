@@ -107,6 +107,9 @@ type Store = {
   // file-tree sidebar: dir path → collapsed? (default expanded)
   treeCollapsed: Record<string, boolean>;
 
+  // Whole file-tree sidebar hidden? (persisted, IDE-style ⌘B / Ctrl+B)
+  sidebarCollapsed: boolean;
+
   // bumped to ask DiffPane to scroll a file into view
   scrollRequest?: { path: string; nonce: number };
 
@@ -146,6 +149,8 @@ type Store = {
   toggleCollapsed: (path: string) => void;
   setCollapsed: (path: string, collapsed: boolean) => void;
   toggleTreeNode: (path: string) => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  toggleSidebar: () => void;
   requestScrollTo: (path: string) => void;
   setViewMode: (mode: ViewMode) => void;
   toggleViewMode: () => void;
@@ -198,6 +203,7 @@ const VIEW_MODE_KEY = "quack:view-mode";
 const WRAP_KEY = "quack:wrap-lines";
 const RESOLVED_KEY = "quack:resolved-threads";
 const ASK_MODEL_KEY = "quack:ask-model";
+const SIDEBAR_KEY = "quack:sidebar-collapsed";
 
 const initialAskModel = (): string | undefined => {
   const raw = readLocal(ASK_MODEL_KEY);
@@ -210,6 +216,8 @@ const initialViewMode = (): ViewMode =>
   readLocal(VIEW_MODE_KEY) === "unified" ? "unified" : "split";
 
 const initialWrap = (): boolean => readLocal(WRAP_KEY) === "1";
+
+const initialSidebarCollapsed = (): boolean => readLocal(SIDEBAR_KEY) === "1";
 
 const initialResolved = (): Record<string, boolean> => {
   const raw = readLocal(RESOLVED_KEY);
@@ -245,6 +253,7 @@ export const useStore = create<Store>((set, get) => ({
   fileViewed: {},
   fileCollapsed: {},
   treeCollapsed: {},
+  sidebarCollapsed: initialSidebarCollapsed(),
   viewMode: initialViewMode(),
   wrapLines: initialWrap(),
   askModel: initialAskModel(),
@@ -361,6 +370,17 @@ export const useStore = create<Store>((set, get) => ({
         [path]: !(s.treeCollapsed[path] ?? false),
       },
     })),
+
+  setSidebarCollapsed: (collapsed) => {
+    writeLocal(SIDEBAR_KEY, collapsed ? "1" : "0");
+    set({ sidebarCollapsed: collapsed });
+  },
+  toggleSidebar: () =>
+    set((s) => {
+      const next = !s.sidebarCollapsed;
+      writeLocal(SIDEBAR_KEY, next ? "1" : "0");
+      return { sidebarCollapsed: next };
+    }),
 
   requestScrollTo: (path) =>
     set((s) => ({

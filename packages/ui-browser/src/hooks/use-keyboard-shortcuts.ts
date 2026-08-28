@@ -27,6 +27,13 @@ const scrollToSelector = (selector: string) => {
 const cssEscape = (s: string): string =>
   typeof CSS !== "undefined" && CSS.escape ? CSS.escape(s) : s.replace(/["\\]/g, "\\$&");
 
+// The filter input lives in the file tree, so "/" has to reveal a collapsed
+// sidebar first — the tree focuses itself on mount off the same nonce.
+const focusFilter = (s: ReturnType<typeof useStore.getState>) => {
+  if (s.sidebarCollapsed) s.setSidebarCollapsed(false);
+  s.requestFocusFilter();
+};
+
 /**
  * Global keyboard shortcuts for review navigation. Mounted once at the app
  * root. Ignores keystrokes while the user is typing in a field, and never
@@ -51,6 +58,15 @@ export const useKeyboardShortcuts = () => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // ⌘B / Ctrl+B toggles the file tree. Checked before the editable and
+      // modifier guards below so it works the way it does in an IDE —
+      // including while the cursor sits in the filter box or a composer.
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        useStore.getState().toggleSidebar();
+        return;
+      }
+
       if (isEditable(e.target)) {
         if (e.key === "Escape" && e.target instanceof HTMLElement) e.target.blur();
         return;
@@ -139,7 +155,7 @@ export const useKeyboardShortcuts = () => {
           // the key as "/" with shiftKey set — treat that as help too.
           e.preventDefault();
           if (e.shiftKey) s.setHelpOpen(!s.helpOpen);
-          else s.requestFocusFilter();
+          else focusFilter(s);
           break;
         case "?":
           e.preventDefault();

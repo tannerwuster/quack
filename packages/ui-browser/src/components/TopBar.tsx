@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { PanelLeft, PanelLeftClose } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { modKeyLabel } from "@/lib/platform";
 import { parseReviewSource } from "@/lib/review-source";
 import { ThemePicker } from "./ThemePicker";
 import { ThemeEditor } from "./ThemeEditor";
@@ -41,6 +43,26 @@ const ConnectionDot = () => {
 const truncSession = (sid: string) =>
   sid.length > 12 ? `${sid.slice(0, 4)}…${sid.slice(-4)}` : sid;
 
+const SidebarToggle = () => {
+  const collapsed = useStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useStore((s) => s.toggleSidebar);
+  const Icon = collapsed ? PanelLeft : PanelLeftClose;
+  const label = collapsed ? "Show file tree" : "Hide file tree";
+
+  return (
+    <button
+      type="button"
+      onClick={toggleSidebar}
+      aria-expanded={!collapsed}
+      aria-label={label}
+      title={`${label} (${modKeyLabel()}B)`}
+      className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+    >
+      <Icon className="size-4" aria-hidden />
+    </button>
+  );
+};
+
 export const TopBar = () => {
   const project = useStore((s) => s.project);
   const protocol = useStore((s) => s.protocol);
@@ -59,6 +81,7 @@ export const TopBar = () => {
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b bg-card px-3 sm:px-4">
+      <SidebarToggle />
       <div className="flex min-w-0 items-center gap-2.5">
         <QuackLogo />
         {label && (

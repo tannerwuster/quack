@@ -2,8 +2,10 @@ import { Keyboard } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
+import { modKeyLabel } from "@/lib/platform";
 
 const SHORTCUTS: { keys: string[]; label: string }[] = [
+  { keys: [`${modKeyLabel()}B`], label: "Toggle file tree" },
   { keys: ["j", "]"], label: "Next file" },
   { keys: ["k", "["], label: "Previous file" },
   { keys: ["n"], label: "Next unresolved comment" },

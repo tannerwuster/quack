@@ -109,6 +109,10 @@ export const paletteFromConfig = (raw: string): Palette => {
 const STYLE_ID = "quack-custom-theme";
 const THEMES_KEY = "quack:custom-themes";
 const ACTIVE_KEY = "quack:custom-active";
+// Which *named* saved theme the active custom palette came from. All custom
+// themes share `data-theme="custom"`, so the name is the only way the picker
+// can tell which row to tick.
+const ACTIVE_NAME_KEY = "quack:custom-active-name";
 
 const paletteToCss = (p: Palette): string => {
   const decls = TOKEN_KEYS.map((k) => (p[k] ? `  --${k}: ${p[k] ?? ""};` : ""))
@@ -135,11 +139,25 @@ export const previewCustomTheme = (p: Palette): void => {
   injectCustomStyle(p);
 };
 
-/** Apply a custom palette and persist it as the active theme. */
-export const activateCustomTheme = (p: Palette): void => {
+/**
+ * Apply a custom palette and persist it as the active theme. `name` is the
+ * saved theme it came from, when there is one — the picker ticks that row.
+ */
+export const activateCustomTheme = (p: Palette, name?: string): void => {
   injectCustomStyle(p);
   writeLocal("quack:theme", "custom");
   writeLocal(ACTIVE_KEY, JSON.stringify(p));
+  writeLocal(ACTIVE_NAME_KEY, name ?? "");
+};
+
+/**
+ * Name of the saved custom theme currently applied, or null when the active
+ * theme is a built-in (or an unsaved preview from the editor).
+ */
+export const activeCustomThemeName = (): string | null => {
+  if (readLocal("quack:theme") !== "custom") return null;
+  const name = readLocal(ACTIVE_NAME_KEY);
+  return name !== null && name !== "" ? name : null;
 };
 
 /** Remove the injected custom style (when switching to a built-in theme). */

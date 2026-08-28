@@ -80,7 +80,7 @@ export const ThemeEditor = ({ onSaved }: { onSaved?: () => void }) => {
   const save = () => {
     const nm = name.trim() || "Custom";
     saveCustomTheme(nm, palette);
-    activateCustomTheme(palette);
+    activateCustomTheme(palette, nm);
     onSaved?.();
   };
 
