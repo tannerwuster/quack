@@ -14,13 +14,9 @@ the file, the conversation, and why it made the change.
 
 No API key. No config. No diff pasted into a chat box.
 
-<!-- TODO(recording): re-record against the current Quack UI, save as
-     assets/nl-descriptors-demo.gif, then uncomment the line below.
+![Quack — typing /quack in your Claude Code session, then reviewing the diff in the browser](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/quack-demo.gif)
 
-![Quack — asking about a past commit's diff in the session that wrote it](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/nl-descriptors-demo.gif)
--->
-
-> **Demo recording coming soon.** _Asking about a past commit's diff in the session that wrote it._
+> _From `/quack` in your session to a themeable, keyboard-driven diff review in the browser._
 
 ## Why quack?
 
