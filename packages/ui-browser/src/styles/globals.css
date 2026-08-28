@@ -182,21 +182,31 @@
   word-break: break-word;
 }
 
-/* Comment widgets are injected as full-width rows in the diff table. Because
-   the no-wrap table is `width: max-content`, that row is as wide as the widest
-   code line, so the widget (and Claude's answer) would run off the right edge
-   and force a horizontal scroll to read it. Pin the widget's content to the
-   left of the visible pane and cap its width to the scroll container's client
-   width (published as `--quack-pane-w` by FilePane), so the thread always fits
-   the viewport and text wraps to the next line instead of overflowing. */
+/* Comment widgets are injected as rows in the diff table. Because the no-wrap
+   table is `width: max-content`, an unconstrained thread is as wide as the
+   widest code line, so it (and its Send button) runs off the right edge and has
+   to be scrolled to.
+
+   Where the thread sits depends on the view mode, because of how
+   react-diff-view emits these rows. In unified view the row is one full-width
+   cell. In split view `SplitWidget` emits two half-width cells and puts the
+   thread in the new-side one (whenever the anchor line is an insert/delete, so
+   the two sides aren't the same element) — so the thread belongs under the new
+   side, the code the question is actually about, not stretched across both.
+
+   Hence the width comes from `--quack-widget-w` (published by FilePane): the
+   pane's client width minus the old side's width, i.e. exactly the room to the
+   right of the split. In unified view the old side is zero, so it falls back to
+   the full pane. `sticky; left: 0` keeps the thread on screen once the old side
+   scrolls past, and the width is never wider than the cell's own column span,
+   so it can't push the `max-content` table any wider. */
 .quack-diff-scroll .diff-widget-content {
   padding: 0;
 }
 .quack-diff-scroll .diff-widget-content > * {
   position: sticky;
   left: 0;
-  width: var(--quack-pane-w, 100%);
-  max-width: 100%;
+  width: var(--quack-widget-w, var(--quack-pane-w, 100%));
   box-sizing: border-box;
 }
 

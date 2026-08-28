@@ -16,9 +16,6 @@ export const ThreadEntry = ({ ask }: { ask: Ask }) => {
     <div className="space-y-1.5">
       {/* The reviewer's question. */}
       <div className="flex items-center gap-2 text-xs">
-        <span className="flex size-5 items-center justify-center rounded-full bg-secondary text-[0.65rem] font-semibold text-secondary-foreground">
-          You
-        </span>
         <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.7rem] text-muted-foreground">
           L{formatRange(ask.fromLine, ask.toLine)}
         </span>

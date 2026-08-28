@@ -117,18 +117,24 @@ const TextDiff = ({ file }: { file: FileData }) => {
     [file, asksByLine, openByLine],
   );
 
-  // Comment widgets are injected as full-width rows inside react-diff-view's
-  // table, which is `width: max-content` (as wide as the widest code line).
-  // Left alone, a widget stretches to that width and Claude's answer runs off
-  // the right edge. We pin the widget to the visible pane (sticky, left:0) and
-  // cap its width to the scroll container's client width, published here as a
-  // CSS variable so the pure-CSS rule in globals.css can read it.
+  // Comment widgets are injected as rows inside react-diff-view's table, which
+  // is `width: max-content` (as wide as the widest code line). Left alone, a
+  // thread stretches to that width and runs off the right edge. Publish the
+  // room available to it as CSS variables so the pure-CSS rules in globals.css
+  // can size it: the pane's client width, and — since split view puts the
+  // thread in the new-side cell — that width minus the old side, so the thread
+  // sits under the code the question is about instead of spanning both sides.
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || typeof ResizeObserver === "undefined") return undefined;
     const sync = () => {
-      el.style.setProperty("--quack-pane-w", `${String(el.clientWidth)}px`);
+      const pane = el.clientWidth;
+      el.style.setProperty("--quack-pane-w", `${String(pane)}px`);
+      el.style.setProperty(
+        "--quack-widget-w",
+        `${String(Math.max(MIN_THREAD_WIDTH, pane - oldSideWidth(el, viewMode)))}px`,
+      );
     };
     sync();
     const ro = new ResizeObserver(sync);
@@ -136,7 +142,7 @@ const TextDiff = ({ file }: { file: FileData }) => {
     return () => {
       ro.disconnect();
     };
-  }, []);
+  }, [viewMode, wrapLines]);
 
   return (
     <div
@@ -181,6 +187,21 @@ const TextDiff = ({ file }: { file: FileData }) => {
       </Diff>
     </div>
   );
+};
+
+// Narrowest a thread may get before it stops being usable, however little room
+// the split leaves it.
+const MIN_THREAD_WIDTH = 280;
+
+// Distance from the table's left edge to the new side's first column. Split
+// view lays each row out as [old gutter][old code][new gutter][new code], so
+// the third cell marks where the new side starts; unified view has no old side.
+const oldSideWidth = (scroll: HTMLElement, viewMode: string): number => {
+  if (viewMode !== "split") return 0;
+  const row = scroll.querySelector("tr.diff-line");
+  const newGutter = row?.children[2];
+  if (!row || !newGutter) return 0;
+  return newGutter.getBoundingClientRect().left - row.getBoundingClientRect().left;
 };
 
 // Resolve the start/end change keys of a drag into an `openComposer`
