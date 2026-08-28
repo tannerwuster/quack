@@ -4,7 +4,7 @@
 [![CI](https://github.com/tannerwuster/quack/actions/workflows/ci.yml/badge.svg)](https://github.com/tannerwuster/quack/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**Treat your AI as a coworker — ask questions about its changes in the same session that wrote the code.**
+**Review your AI's diff in the browser, and ask about it in the same Claude Code session that wrote it.**
 
 `/quack` from inside any Claude Code session opens a GitHub-style diff
 viewer in your browser. Hover a line, click `+`, type a question. The
@@ -12,16 +12,28 @@ answer streams back inline — and because each ask resumes the same
 Claude Code session that wrote the code, the model already remembers
 the file, the conversation, and why it made the change.
 
-![quack demo for natural language descriptors](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/nl-descriptors-demo.gif)
+No API key. No config. No diff pasted into a chat box.
 
-> Asking about a past commit's diff in the session that wrote it.
+<!-- TODO(recording): re-record against the current Quack UI, save as
+     assets/nl-descriptors-demo.gif, then uncomment the line below.
+
+![Quack — asking about a past commit's diff in the session that wrote it](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/nl-descriptors-demo.gif)
+-->
+
+> **Demo recording coming soon.** _Asking about a past commit's diff in the session that wrote it._
 
 ## Why quack?
 
-Developers often prompt AIs to write the code, then, if the diff becomes large enough, open draft GitHub PRs in order to review it better.
-Then, if there are any questions, take the diff back to the terminal, ask questions about it, and repeat.
+The usual loop is clumsy: you prompt an AI to write the code, and once
+the diff is big enough to need real review, you open a draft PR just to
+get a decent diff viewer. Then every question means copying context back
+into the terminal, re-explaining what you're looking at, and repeating.
 
-**Quack** simplifies this process by combining the diff viewer and the Q&A interface into one seamless experience, directly integrated with the very same Claude Code session that wrote the code. It makes you treat the model truly as a coworker who already knows the entire context and the reasoning behind every single line of the diff.
+Quack collapses that loop. The diff viewer and the Q&A surface are the
+same window, wired directly into the Claude Code session that wrote the
+code — so the model already knows the file, the conversation, and the
+reasoning behind every line. You review a coworker's work by asking the
+coworker, not by briefing a stranger.
 
 ## Quickstart
 
@@ -43,40 +55,123 @@ npx -y quackdiff install-skill --global
 /quack last commit attached to the session where we discussed auth    # send asks to a different past session
 ```
 
-That's it. No API key, no config. The browser opens to a syntax-highlighted diff; comments stream back as the model thinks.
+That's it. The browser opens to a syntax-highlighted diff; answers
+stream back as the model thinks.
+
+**Requirements:** Node >= 18 and the `claude` CLI, already authenticated.
 
 ## Use cases
 
 ### Review a past commit in the session that wrote it
 
-The hero demo above shows this case: `/quack` with a natural-language description of the diff and session finds the right git invocation, captures the output, and points the server at it. Asks flow into that past session, so the model already wrote (or investigated) the code you're asking about — even if you're currently in a different session.
+`/quack` with a natural-language description of the diff (and
+optionally the session) finds the right git invocation, captures the
+output, and points the server at it. Asks flow into that past session,
+so the model already wrote — or investigated — the code you're asking
+about, even if you're currently in a different session.
 
 ### Review code as you're writing it
 
-`/quack` with no description shows the working tree diff — all uncommitted changes. Best used in the same session that made the changes, so it holds the full context of the edits.
+`/quack` with no description shows the working-tree diff, all
+uncommitted changes included. Best used in the same session that made
+the changes, so it holds the full context of the edits.
 
-![quack demo for the working directory path](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/working-tree-demo.gif)
+<!-- TODO(recording): re-record against the current Quack UI, save as
+     assets/working-tree-demo.gif, then uncomment the line below.
+
+![Quack — reviewing the working tree](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/working-tree-demo.gif)
+-->
+
+> **Demo recording coming soon.** _Reviewing uncommitted working-tree changes._
 
 ## How it works
 
-Each ask spawns the `claude` CLI with `--resume <your-session-id>`.
-So your question becomes a real turn in the running session's transcript:
+Each ask spawns the `claude` CLI with `--resume <your-session-id>`, so
+your question becomes a real turn in that session's transcript:
 
 - **No diff sent to the model.** The resumed session already has the
-  full context that wrote the code; the prompt is just your question.
-- **No Anthropic API key needed.** quack doesn't talk to the API —
-  it shells out to the `claude` CLI you've already auth'd via
-  subscription or API key.
+  context that wrote the code; the prompt is just your question.
+- **No Anthropic API key needed.** Quack never talks to the API — it
+  shells out to the `claude` CLI you've already auth'd via subscription
+  or API key.
 - **Auto-cleanup.** The server self-exits after 5 minutes of
-  inactivity — close the browser tab and forget about it.
+  inactivity. Close the tab and forget about it.
+
+## The review UI
+
+### Inline comments
+
+Hover any line in the diff and a `+` appears in the gutter. Click it for
+a single-line question, or click and drag to range over several lines.
+The comment widget opens below the selection; type and hit
+`Cmd/Ctrl+Enter` (or click `Send`).
+
+### Streaming answers
+
+Tokens stream in as the model generates them, usually starting within
+about a second. Click `Stop` to abort mid-stream. Markdown renders live,
+including syntax-highlighted code blocks in 30+ languages.
+
+### Threaded discussions
+
+Each line holds multiple ask/answer pairs, rendered as a threaded
+conversation inline with the diff, so follow-ups keep their context.
+Threads can be marked resolved, and resolved state persists across
+re-runs.
+
+### Pick the model per question
+
+The composer has a model selector, so a throwaway "what does this
+variable do?" can go to Haiku while the architectural questions stay on
+your session's model — no server restart:
+
+| Option | Behaviour |
+|---|---|
+| Session default | Inherit the review session's model (no override) |
+| Opus | Most capable |
+| Sonnet | Balanced speed & quality |
+| Haiku | Fastest, lightest on tokens |
+
+### Keyboard-first navigation
+
+Press `?` in the viewer for the full list:
+
+| Key | Action |
+|---|---|
+| `j` / `]` | Next file |
+| `k` / `[` | Previous file |
+| `n` | Next unresolved comment |
+| `p` | Previous unresolved comment |
+| `v` | Toggle viewed |
+| `e` | Expand / collapse file |
+| `u` | Toggle split / unified |
+| `w` | Toggle line wrap |
+| `/` | Filter files |
+| `?` | Toggle the shortcut help |
+
+### Reading controls
+
+Split and unified diff modes, line wrapping, a resizable file tree with
+file-type icons and a filter box, per-file "viewed" checkmarks, and a
+review-progress indicator in the top bar. Every one of these persists
+across runs.
+
+### Themes
+
+Six built-ins — `light`, `dark`, `quack`, `duckhunt`, `dracula`, and
+`cosmicgirl` — plus a custom theme editor. Give it two colors and it
+derives a full palette, or paste raw tokens (`{"background":"#0e1419"}`
+or `--background: #0e1419;`). You can also describe the theme you want
+and have Claude generate it. Custom themes are saved locally and
+selectable alongside the built-ins.
 
 ## Usage
 
 ### Diff selection
 
-Anything after `/quack` is a description — Claude figures out the
-right `git diff` invocation, writes the result to a temp file, and
-points the server at it. Some examples:
+Anything after `/quack` is a description — Claude figures out the right
+`git diff` invocation, writes the result to a temp file, and points the
+server at it:
 
 | You type | What you'll review |
 |---|---|
@@ -90,69 +185,50 @@ points the server at it. Some examples:
 | `/quack the commit where I added the favicon` | Claude searches commit messages, diff content, or file history to find it |
 
 Defaults when ambiguous:
+
 - "branch X against branch Y" between named refs ⇒ three-dot (PR semantics).
 - Two arbitrary commits ⇒ two-dot (literal tree diff).
 - "Nth latest commit" ⇒ that single commit's changes.
 
-The TopBar shows what diff you're reviewing as a small label
+The top bar shows what you're reviewing as a small label
 (e.g. `Working tree`, `HEAD~1..HEAD`, `main…feature/x`).
 
-**Re-invoking refreshes.** Run `/quack` again from the same session
-and the previous server is killed, the diff is recomputed, and the
-existing browser tab auto-reconnects on the same port. For working-tree
-diffs, an amber banner appears if any reviewed file has been edited
-since the diff was captured, prompting you to re-run `/quack`.
+**Re-invoking refreshes.** Run `/quack` again from the same session and
+the previous server is killed, the diff recomputed, and the existing
+browser tab auto-reconnects on the same port. For working-tree diffs, an
+amber banner appears if a reviewed file changed since the diff was
+captured, prompting a re-run.
 
 ### Session selection
 
-By default `/quack` attaches to the **invoking** session — the one running
-the skill. Asks become real turns in that session's transcript.
+By default `/quack` attaches to the **invoking** session — the one
+running the skill. Asks become real turns in that session's transcript.
 
-If the diff you're reviewing was written (or investigated) in a *different*
-past session, describe that session in natural language and asks will flow
-there instead. The original "ask in the same session that wrote the code"
-promise still holds — it's just that the session that wrote the code might
-not be the session you're currently in:
+If the diff you're reviewing was written (or investigated) in a
+*different* past session, describe that session in natural language and
+asks flow there instead. The "ask in the session that wrote the code"
+promise still holds; it's just that the session that wrote the code
+might not be the one you're sitting in:
 
 | You type | What attaches |
 |---|---|
-| `/quack last commit` | invoking session (default — same as today) |
-| `/quack last commit in our session about pricing rules` | searches sessions in this project for "pricing rules" mentions; the dominant match attaches |
-| `/quack abc123 vs def456 attached to the session that authored it` | Claude builds keyword needles from the diff; matches that to a past session |
-| `/quack session 322bc90a` | exact UUID prefix; resolves to a specific session |
+| `/quack last commit` | invoking session (the default) |
+| `/quack last commit in our session about pricing rules` | searches this project's sessions for "pricing rules"; the dominant match attaches |
+| `/quack abc123 vs def456 attached to the session that authored it` | Claude builds keyword needles from the diff and matches them to a past session |
+| `/quack session 322bc90a` | exact UUID prefix |
 | `/quack in session 322bc90a-714f-41b7-914e-109404e46072` | full UUID |
 
-Search is bounded: only sessions touched in the last 30 days, top 5 candidates
-by hit count, and `command grep -Ff` over the JSONL transcripts so it stays
-fast and uses zero LLM tokens. If multiple sessions match comparably, quack
-asks you which to use rather than guessing. If nothing matches, it falls back
-to the invoking session.
-
-### Inline comments
-
-Hover any line in the diff. A `+` button appears in the gutter.
-Click it for a single-line question, or click and drag to range over
-multiple lines. The comment widget renders below the selected lines;
-type a question and hit `Cmd/Ctrl+Enter` (or click `Send`).
-
-### Streaming answers
-
-Tokens stream in as the model generates them — usually starting within
-~1 second, typing speed-of-thought. Click `Stop` mid-stream to abort.
-Markdown is rendered live, including syntax-highlighted code blocks
-in any of 30+ languages.
-
-### Threaded discussions
-
-Each line can have multiple ask/answer pairs. They render as a
-threaded conversation inline with the diff, so you can ask a
-follow-up without losing context.
+Search is bounded: sessions touched in the last 30 days, top 5
+candidates by hit count, and `command grep -Ff` over the JSONL
+transcripts, so it stays fast and costs zero LLM tokens. If several
+sessions match comparably, Quack asks which to use rather than guessing.
+If nothing matches, it falls back to the invoking session.
 
 ## Updates
 
-After launching, the skill asynchronously checks npm for a newer
-version and prints a passive upgrade notice if one exists. Run the
-printed command at the same scope you originally installed:
+After launching, the skill asynchronously checks npm for a newer version
+and prints a passive upgrade notice if one exists. Run the printed
+command at the scope you originally installed:
 
 ```bash
 npx -y quackdiff@latest install-skill --force            # project-local
@@ -171,27 +247,26 @@ rm -rf <git-root>/.claude/skills/quack   # project-local (the default)
 rm -rf ~/.claude/skills/quack            # user-level (--global)
 ```
 
-quack keeps no other state under `~/.claude` or your project.
-Anything left in `/tmp/quack*` is session-scoped scratch and clears
-itself out within the WS server's idle-shutdown window.
+Quack keeps no other state under `~/.claude` or your project. Anything
+left in `/tmp/quack*` is session-scoped scratch and clears itself within
+the server's idle-shutdown window.
 
 ## Help & contributing
 
 - Hitting a bug? See [SUPPORT.md](./SUPPORT.md) for common issues and
   how to file a useful report.
-- Hacking on quack? See [CONTRIBUTING.md](./CONTRIBUTING.md) for the
-  dev loop, architecture, and the in-repo `/quack-dev` skill.
+- Hacking on Quack? See [CONTRIBUTING.md](./CONTRIBUTING.md) for the dev
+  loop, architecture, and the in-repo `/quack-dev` skill.
 
-## Star History
+## Credits
 
-<a href="https://www.star-history.com/?repos=tannerwuster%2Fquack&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=tannerwuster/quack&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=tannerwuster/quack&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=tannerwuster/quack&type=date&legend=top-left" />
- </picture>
-</a>
+Quack is a fork of [askdiff](https://github.com/narghev/askdiff) by
+[Narek Ghevandiani](https://github.com/narghev), which contributed the
+original diff viewer, WebSocket server, and session-resume design. This
+fork adds the themed UI, keyboard navigation, per-ask model selection,
+and view controls. Both are MIT licensed.
 
 ## License
 
-[MIT](./LICENSE) © [narghev](https://github.com/narghev)
+[MIT](./LICENSE) — © 2026 Narek Ghevandiani (original work),
+© 2026 Tanner A. Wuster (modifications).
