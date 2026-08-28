@@ -201,11 +201,8 @@ export const useStore = create<Store>((set, get) => ({
       const willBeViewed = !(s.fileViewed[path] ?? false);
       return {
         fileViewed: { ...s.fileViewed, [path]: willBeViewed },
-        // Match GitHub: marking a file viewed also collapses it.
-        // Unmarking does not auto-expand — the user can do that explicitly.
-        fileCollapsed: willBeViewed
-          ? { ...s.fileCollapsed, [path]: true }
-          : s.fileCollapsed,
+        // Marking a file viewed collapses it; unmarking expands it again.
+        fileCollapsed: { ...s.fileCollapsed, [path]: willBeViewed },
       };
     }),
 
