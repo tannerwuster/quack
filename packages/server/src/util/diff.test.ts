@@ -213,7 +213,7 @@ describe("getDiff", () => {
   let dir: string;
 
   beforeAll(() => {
-    dir = mkdtempSync(join(tmpdir(), "askdiff-test-"));
+    dir = mkdtempSync(join(tmpdir(), "quack-test-"));
   });
 
   afterAll(() => {

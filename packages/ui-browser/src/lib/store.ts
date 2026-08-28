@@ -1,4 +1,4 @@
-import type { ClientMessage, DiffFile } from "@askdiff/protocol";
+import type { ClientMessage, DiffFile } from "@quack/protocol";
 import { create } from "zustand";
 import { readLocal, writeLocal } from "@/lib/persist";
 
@@ -194,10 +194,10 @@ const newId = () =>
     ? globalThis.crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
-const VIEW_MODE_KEY = "askdiff:view-mode";
-const WRAP_KEY = "askdiff:wrap-lines";
-const RESOLVED_KEY = "askdiff:resolved-threads";
-const ASK_MODEL_KEY = "askdiff:ask-model";
+const VIEW_MODE_KEY = "quack:view-mode";
+const WRAP_KEY = "quack:wrap-lines";
+const RESOLVED_KEY = "quack:resolved-threads";
+const ASK_MODEL_KEY = "quack:ask-model";
 
 const initialAskModel = (): string | undefined => {
   const raw = readLocal(ASK_MODEL_KEY);
@@ -255,7 +255,7 @@ export const useStore = create<Store>((set, get) => ({
   focusFilterNonce: 0,
   toasts: [],
   _send: () => {
-    get().pushToast("Not connected to askdiff server");
+    get().pushToast("Not connected to quack server");
   },
 
   setSend: (fn) => set({ _send: fn }),

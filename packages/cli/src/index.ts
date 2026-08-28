@@ -8,7 +8,7 @@ import { Command } from "commander";
 import open from "open";
 import { resolveSession } from "./resolve-session.js";
 
-// `@askdiff/server`, `@askdiff/protocol`, and `./server-bundle.js` are
+// `@quack/server`, `@quack/protocol`, and `./server-bundle.js` are
 // loaded lazily inside `runServer` (the only place that needs them).
 // Static imports would force them onto every code path, including
 // `resolve-session`, and the protocol package is CJS — statically
@@ -19,7 +19,7 @@ import { resolveSession } from "./resolve-session.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const PROJECT_NAME = "askdiff";
+const PROJECT_NAME = "quack";
 const DEFAULT_PORT = 7837;
 
 interface RunOptions {
@@ -35,7 +35,7 @@ async function main(): Promise<void> {
   program
     .name(PROJECT_NAME)
     .description(
-      "Treat your AI as a coworker — ask questions about its changes in any diff viewer.",
+      "Review your AI's diff in the browser and ask about it in the same Claude Code session that wrote it.",
     )
     .option("-p, --port <n>", "preferred port (auto-bumps if taken)", (v) =>
       Number.parseInt(v, 10),
@@ -57,7 +57,7 @@ async function main(): Promise<void> {
   program
     .command("install-skill")
     .description(
-      "Install the askdiff Claude Code skill into the current project (default: <git-root>/.claude/skills/askdiff/). Pass --global to install user-level instead.",
+      "Install the quack Claude Code skill into the current project (default: <git-root>/.claude/skills/quack/). Pass --global to install user-level instead.",
     )
     .option(
       "--force",
@@ -66,7 +66,7 @@ async function main(): Promise<void> {
     )
     .option(
       "--global",
-      "install into the user-level config dir (~/.claude/skills/askdiff/) instead of the current project",
+      "install into the user-level config dir (~/.claude/skills/quack/) instead of the current project",
       false,
     )
     .action(async (opts: { force: boolean; global: boolean }) => {
@@ -125,8 +125,8 @@ async function runServer(opts: RunOptions): Promise<void> {
   // imports so the dev-skill `tsx` invocation works.
   const [{ startServer, WS_PATH }, { PROTOCOL_VERSION }, { createUiHttpServer }] =
     await Promise.all([
-      import("@askdiff/server"),
-      import("@askdiff/protocol"),
+      import("@quack/server"),
+      import("@quack/protocol"),
       import("./server-bundle.js"),
     ]);
 
@@ -200,12 +200,12 @@ async function installSkill(force: boolean, useGlobal: boolean): Promise<void> {
 
   await mkdir(targetDir, { recursive: true });
   await copyFile(source, target);
-  console.log(`installed askdiff skill at ${target}`);
+  console.log(`installed quack skill at ${target}`);
   if (useGlobal) {
-    console.log("invoke /askdiff from any Claude Code session.");
+    console.log("invoke /quack from any Claude Code session.");
   } else {
     console.log(
-      "invoke /askdiff from any Claude Code session inside this project. (Project skills override same-named user-level skills.)",
+      "invoke /quack from any Claude Code session inside this project. (Project skills override same-named user-level skills.)",
     );
   }
 }
@@ -255,30 +255,30 @@ async function resolveOptions(opts: RunOptions): Promise<ResolvedOptions> {
 
   const cwd =
     opts.cwd ??
-    process.env["ASKDIFF_PROJECT_CWD"] ??
+    process.env["QUACK_PROJECT_CWD"] ??
     fromManifest?.cwd ??
     process.cwd();
 
   const session =
     opts.session ??
-    process.env["ASKDIFF_SESSION_ID"] ??
+    process.env["QUACK_SESSION_ID"] ??
     fromManifest?.sessionId;
   if (!session) {
     throw new Error(
-      "Claude Code session is required. Pass --session <uuid>, set ASKDIFF_SESSION_ID, or run from inside a Claude Code session so the parent manifest is found.",
+      "Claude Code session is required. Pass --session <uuid>, set QUACK_SESSION_ID, or run from inside a Claude Code session so the parent manifest is found.",
     );
   }
 
   const port = opts.port ?? (Number(process.env["PORT"]) || DEFAULT_PORT);
 
-  const diffFile = process.env["ASKDIFF_DIFF_FILE"];
+  const diffFile = process.env["QUACK_DIFF_FILE"];
   if (!diffFile) {
     throw new Error(
-      "ASKDIFF_DIFF_FILE is required. The askdiff skill must compute the diff and pass the path before launching the server.",
+      "QUACK_DIFF_FILE is required. The quack skill must compute the diff and pass the path before launching the server.",
     );
   }
-  const diffLabel = process.env["ASKDIFF_DIFF_LABEL"];
-  const volatile = isTruthy(process.env["ASKDIFF_DIFF_VOLATILE"]);
+  const diffLabel = process.env["QUACK_DIFF_LABEL"];
+  const volatile = isTruthy(process.env["QUACK_DIFF_VOLATILE"]);
 
   return {
     port,

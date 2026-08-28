@@ -2,7 +2,7 @@ import {
   ServerMessageSchema,
   type ClientMessage,
   type ServerMessage,
-} from "@askdiff/protocol";
+} from "@quack/protocol";
 import { useStore } from "./store";
 
 const RECONNECT_DELAYS_MS = [1000, 2000, 5000, 10000];
@@ -10,7 +10,7 @@ const PING_INTERVAL_MS = 25000;
 
 // Same-origin WS URL. In production the Node server hosts both the UI
 // and the WebSocket on one port; in dev Vite proxies `/ws` to the
-// askdiff server (configured via `ASKDIFF_DEV_WS_TARGET` in vite.config).
+// quack server (configured via `QUACK_DEV_WS_TARGET` in vite.config).
 const wsUrl = (): string => {
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${proto}//${window.location.host}/ws`;
@@ -30,7 +30,7 @@ const send = (msg: ClientMessage) => {
   if (current && current.socket.readyState === WebSocket.OPEN) {
     current.socket.send(JSON.stringify(msg));
   } else {
-    useStore.getState().pushToast("Not connected to askdiff server");
+    useStore.getState().pushToast("Not connected to quack server");
   }
 };
 

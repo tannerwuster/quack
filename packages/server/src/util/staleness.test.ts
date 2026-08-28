@@ -3,7 +3,7 @@ import { utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
-import type { DiffFile } from "@askdiff/protocol";
+import type { DiffFile } from "@quack/protocol";
 import { checkStaleness } from "./staleness";
 
 // Each test gets its own scratch directory so the diff-file mtime and
@@ -20,7 +20,7 @@ describe("checkStaleness", () => {
   let diffFile: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "askdiff-staleness-test-"));
+    dir = mkdtempSync(join(tmpdir(), "quack-staleness-test-"));
     diffFile = join(dir, "diff");
   });
 

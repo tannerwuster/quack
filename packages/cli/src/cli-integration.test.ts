@@ -14,7 +14,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-// Path to the built CLI bundle. Tests run after `pnpm --filter askdiff run build`,
+// Path to the built CLI bundle. Tests run after `pnpm --filter quackdiff run build`,
 // or directly during dev — when the bundle isn't present, tests are skipped to
 // avoid masking the real failure.
 const REPO_ROOT = resolvePath(__dirname, "..", "..", "..");
@@ -42,7 +42,7 @@ describe("CLI integration: resolve-session subcommand", () => {
   let cliExists = true;
 
   beforeEach(() => {
-    configDir = mkdtempSync(join(tmpdir(), "askdiff-cli-integration-"));
+    configDir = mkdtempSync(join(tmpdir(), "quack-cli-integration-"));
     projectDir = join(configDir, "projects", ENCODED);
     mkdirSync(projectDir, { recursive: true });
 
@@ -144,8 +144,8 @@ describe("CLI integration: resolve-session subcommand", () => {
   });
 });
 
-// The askdiff-dev skill calls the CLI via `tsx src/index.ts resolve-session …`.
-// Static imports of `@askdiff/protocol` (CJS) at the top of `src/index.ts`
+// The quack-dev skill calls the CLI via `tsx src/index.ts resolve-session …`.
+// Static imports of `@quack/protocol` (CJS) at the top of `src/index.ts`
 // would break this path under ESM. This test guards against re-introducing
 // such imports.
 describe("CLI integration: dev path (tsx)", () => {
@@ -156,7 +156,7 @@ describe("CLI integration: dev path (tsx)", () => {
   const CLI_SOURCE = join(REPO_ROOT, "packages", "cli", "src", "index.ts");
 
   beforeEach(() => {
-    configDir = mkdtempSync(join(tmpdir(), "askdiff-cli-tsx-"));
+    configDir = mkdtempSync(join(tmpdir(), "quack-cli-tsx-"));
     projectDir = join(configDir, "projects", ENCODED);
     mkdirSync(projectDir, { recursive: true });
   });

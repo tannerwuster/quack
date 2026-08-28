@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebrand the forked `askdiff` tool to **Quack** and add a friendlier, more discoverable review UI — visible comment affordance, a resizable file tree with colored file-type icons, named themes (Dracula, CosmicGirl's Dracula Neon), and a custom-theme creator (deterministic derivation + optional Haiku refinement) — while keeping the code merge-friendly with upstream and the per-ask token cost lean.
+**Goal:** Rebrand the forked `quack` tool to **Quack** and add a friendlier, more discoverable review UI — visible comment affordance, a resizable file tree with colored file-type icons, named themes (Dracula, CosmicGirl's Dracula Neon), and a custom-theme creator (deterministic derivation + optional Haiku refinement) — while keeping the code merge-friendly with upstream and the per-ask token cost lean.
 
-**Architecture:** A pnpm monorepo (`cli`, `server`, `protocol`, `ui-browser`). The browser UI is React 19 + Tailwind v4 + Radix, styled entirely through CSS variables in one stylesheet, with a WebSocket link to a local server that shells out to the `claude` CLI. All work happens in `packages/ui-browser` except the Haiku theme call (server + protocol). Internal package names stay `askdiff`/`@askdiff/*` to keep `git pull upstream` painless; only the user-facing surface (slash command, wordmark) rebrands to Quack.
+**Architecture:** A pnpm monorepo (`cli`, `server`, `protocol`, `ui-browser`). The browser UI is React 19 + Tailwind v4 + Radix, styled entirely through CSS variables in one stylesheet, with a WebSocket link to a local server that shells out to the `claude` CLI. All work happens in `packages/ui-browser` except the Haiku theme call (server + protocol). Internal package names stay `quack`/`@quack/*` to keep `git pull upstream` painless; only the user-facing surface (slash command, wordmark) rebrands to Quack.
 
 **Tech Stack:** TypeScript, React 19, Tailwind CSS v4, Radix UI (popover), zustand, react-diff-view v3.3.1, refractor/Prism, Vite 6, Jest (ts-jest, node env), pnpm workspaces.
 
@@ -12,15 +12,15 @@
 
 ## Global Constraints
 
-- **Repo:** `/Users/twuster/Documents/Personal/quack`, branch `polish/theming-ux`. `origin` = `tannerwuster/quack`, `upstream` = `narghev/askdiff`.
-- **Keep internal names** `askdiff` / `@askdiff/*` unchanged — rebrand only the slash command, the TopBar wordmark, and the browser tab title. This minimizes upstream merge conflicts.
-- **Persistence pattern:** hand-rolled `localStorage`, keys namespaced `askdiff:*` (unchanged, for pre-paint-script compatibility), each access wrapped in try/catch. Keys used: `askdiff:theme`, `askdiff:hint-dismissed`, `askdiff:sidebar-width`, `askdiff:custom-themes`.
+- **Repo:** `/Users/twuster/Documents/Personal/quack`, branch `polish/theming-ux`. `origin` = `tannerwuster/quack`, `upstream` = `tannerwuster/quack`.
+- **Keep internal names** `quack` / `@quack/*` unchanged — rebrand only the slash command, the TopBar wordmark, and the browser tab title. This minimizes upstream merge conflicts.
+- **Persistence pattern:** hand-rolled `localStorage`, keys namespaced `quack:*` (unchanged, for pre-paint-script compatibility), each access wrapped in try/catch. Keys used: `quack:theme`, `quack:hint-dismissed`, `quack:sidebar-width`, `quack:custom-themes`.
 - **Token discipline:** the per-ask prompt stays exactly as upstream (preamble + selected chunk + question; no full diff). The only new Claude call is a **non-resume** Haiku one-shot used solely when *creating* a theme.
 - **Model id:** use the `haiku` alias, never a dated model id.
 - **Commit style:** conventional-commit subjects; **no Claude co-author trailer**. Commit after each task.
 - **Icon licensing:** vendored SVGs come from Material Icon Theme (MIT); record attribution in `packages/ui-browser/src/components/file-icons/LICENSE`.
-- **Verify each task:** `pnpm --filter @askdiff/ui-browser typecheck` and `pnpm lint` must pass. Run `pnpm test` when a task adds/changes a `.ts` unit test. UI behavior is verified manually via the dev loop (Jest is node-env, `.ts`-only, and cannot run `.tsx` component tests).
-- **Dev loop:** run `/quack-dev` (renamed in Task 1; was `/askdiff-dev`) from inside the repo → Vite HMR on the UI + a local WS server via `tsx`. Exercise changes against a real diff (e.g. a `uw-web` commit).
+- **Verify each task:** `pnpm --filter @quack/ui-browser typecheck` and `pnpm lint` must pass. Run `pnpm test` when a task adds/changes a `.ts` unit test. UI behavior is verified manually via the dev loop (Jest is node-env, `.ts`-only, and cannot run `.tsx` component tests).
+- **Dev loop:** run `/quack-dev` (renamed in Task 1; was `/quack-dev`) from inside the repo → Vite HMR on the UI + a local WS server via `tsx`. Exercise changes against a real diff (e.g. a `uw-web` commit).
 
 ---
 
@@ -38,7 +38,7 @@
 - `docs/token-audit.md` — the Phase 5 written report.
 
 **Modified files:**
-- `.claude/skills/askdiff/` → `.claude/skills/quack/`, `.claude/skills/askdiff-dev/` → `.claude/skills/quack-dev/` (frontmatter `name:` + self-references).
+- `.claude/skills/quack/` → `.claude/skills/quack/`, `.claude/skills/quack-dev/` → `.claude/skills/quack-dev/` (frontmatter `name:` + self-references).
 - `packages/ui-browser/index.html` — tab title; pre-paint script reads theme *name* → `data-theme`.
 - `packages/ui-browser/src/components/TopBar.tsx` — wordmark; mount `ThemePicker`.
 - `packages/ui-browser/src/components/FilePane.tsx` — `renderGutter` for the `+` affordance.
@@ -57,8 +57,8 @@
 ## Task 1: Rebrand surface to Quack
 
 **Files:**
-- Rename: `.claude/skills/askdiff/` → `.claude/skills/quack/`; `.claude/skills/askdiff-dev/` → `.claude/skills/quack-dev/`
-- Modify: the two renamed `SKILL.md` files (frontmatter `name:` and any `/askdiff`/`/askdiff-dev` self-references in their bodies)
+- Rename: `.claude/skills/quack/` → `.claude/skills/quack/`; `.claude/skills/quack-dev/` → `.claude/skills/quack-dev/`
+- Modify: the two renamed `SKILL.md` files (frontmatter `name:` and any `/quack`/`/quack-dev` self-references in their bodies)
 - Modify: `packages/ui-browser/index.html:9` (tab title)
 - Modify: `packages/ui-browser/src/components/TopBar.tsx` (wordmark text)
 
@@ -69,30 +69,30 @@
 
 ```bash
 cd /Users/twuster/Documents/Personal/quack
-git mv .claude/skills/askdiff .claude/skills/quack
-git mv .claude/skills/askdiff-dev .claude/skills/quack-dev
+git mv .claude/skills/quack .claude/skills/quack
+git mv .claude/skills/quack-dev .claude/skills/quack-dev
 ```
 
 - [ ] **Step 2: Update skill frontmatter + self-references**
 
-In `.claude/skills/quack/SKILL.md` and `.claude/skills/quack-dev/SKILL.md`, change the frontmatter `name:` (`askdiff`→`quack`, `askdiff-dev`→`quack-dev`) and any in-body mentions of the old slash command to the new one. Grep to confirm none missed:
+In `.claude/skills/quack/SKILL.md` and `.claude/skills/quack-dev/SKILL.md`, change the frontmatter `name:` (`quack`→`quack`, `quack-dev`→`quack-dev`) and any in-body mentions of the old slash command to the new one. Grep to confirm none missed:
 
 ```bash
-grep -rn "askdiff-dev\|/askdiff" .claude/skills/quack .claude/skills/quack-dev
+grep -rn "quack-dev\|/quack" .claude/skills/quack .claude/skills/quack-dev
 ```
 Expected after edits: only intentional references remain (e.g. explaining lineage), no stale command names.
 
 - [ ] **Step 3: Rebrand the tab title**
 
-In `packages/ui-browser/index.html`, change `<title>askdiff</title>` (line 9) to `<title>quack</title>`.
+In `packages/ui-browser/index.html`, change `<title>quack</title>` (line 9) to `<title>quack</title>`.
 
 - [ ] **Step 4: Rebrand the TopBar wordmark**
 
-In `packages/ui-browser/src/components/TopBar.tsx`, find the brand text `askdiff` (the left-most wordmark) and change it to `quack`. Grep to locate: `grep -n "askdiff" packages/ui-browser/src/components/TopBar.tsx`.
+In `packages/ui-browser/src/components/TopBar.tsx`, find the brand text `quack` (the left-most wordmark) and change it to `quack`. Grep to locate: `grep -n "quack" packages/ui-browser/src/components/TopBar.tsx`.
 
 - [ ] **Step 5: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 6: Manually verify the dev loop under the new command**
@@ -162,7 +162,7 @@ In `globals.css`, extend the existing `.diff-gutter` rule (currently lines 78-80
 
 - [ ] **Step 3: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 4: Manually verify in the dev loop**
@@ -211,11 +211,11 @@ export const writeLocal = (key: string, value: string): void => {
 
 - [ ] **Step 2: Add the one-time hint to DiffPane**
 
-In `DiffPane.tsx`, at the top of the rendered files container (the `<div className="space-y-4 p-4">` at line 45), render a dismissible hint driven by `askdiff:hint-dismissed`:
+In `DiffPane.tsx`, at the top of the rendered files container (the `<div className="space-y-4 p-4">` at line 45), render a dismissible hint driven by `quack:hint-dismissed`:
 
 ```tsx
 const [hintDismissed, setHintDismissed] = useState(
-  () => readLocal("askdiff:hint-dismissed") === "1",
+  () => readLocal("quack:hint-dismissed") === "1",
 );
 // ...inside the returned <div>, before files.map:
 {!hintDismissed && (
@@ -225,7 +225,7 @@ const [hintDismissed, setHintDismissed] = useState(
       type="button"
       className="ml-3 rounded px-1.5 py-0.5 hover:bg-accent"
       onClick={() => {
-        writeLocal("askdiff:hint-dismissed", "1");
+        writeLocal("quack:hint-dismissed", "1");
         setHintDismissed(true);
       }}
     >
@@ -239,7 +239,7 @@ Add the `useState` import and `import { readLocal, writeLocal } from "@/lib/pers
 
 - [ ] **Step 3: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 4: Manually verify**
@@ -270,7 +270,7 @@ In `FileTree.tsx`, replace the fixed `w-64 shrink-0` on the `<aside>` (line 25) 
 
 ```tsx
 const [width, setWidth] = useState(() => {
-  const raw = Number(readLocal("askdiff:sidebar-width"));
+  const raw = Number(readLocal("quack:sidebar-width"));
   return Number.isFinite(raw) && raw >= 180 && raw <= 520 ? raw : 256;
 });
 ```
@@ -294,7 +294,7 @@ Make the `<aside>` `relative`, and append before its closing tag:
     };
     const onUp = (ev: MouseEvent) => {
       const next = Math.min(520, Math.max(180, startW + ev.clientX - startX));
-      writeLocal("askdiff:sidebar-width", String(next));
+      writeLocal("quack:sidebar-width", String(next));
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
     };
@@ -309,7 +309,7 @@ Add `import { readLocal, writeLocal } from "@/lib/persist";` and `useState`. (No
 
 - [ ] **Step 3: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 4: Manually verify**
@@ -337,7 +337,7 @@ git commit -m "feat(ui): make the file-tree sidebar resizable and persistent"
 
 - [ ] **Step 1: Add the `@/` alias to Jest**
 
-In `jest.config.cjs`, add to `moduleNameMapper` (alongside the existing `@askdiff/protocol` mapping):
+In `jest.config.cjs`, add to `moduleNameMapper` (alongside the existing `@quack/protocol` mapping):
 
 ```js
 "^@/(.*)$": "<rootDir>/packages/ui-browser/src/$1",
@@ -517,7 +517,7 @@ Keep the change-type badge (`badge.label`) — it conveys add/modify/delete, dis
 
 - [ ] **Step 3: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS. (If TS complains about `JSX.Element`, import `type { ReactElement }` and use that instead.)
 
 - [ ] **Step 4: Manually verify**
@@ -585,7 +585,7 @@ Delete the now-redundant `.dark .token.*` block. Preserve any light-vs-dark grou
 
 - [ ] **Step 3: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 4: Manually verify no regression**
@@ -623,7 +623,7 @@ Rewrite the `index.html` pre-paint script (lines 10-20):
 <script>
   (function () {
     try {
-      var name = localStorage.getItem("askdiff:theme");
+      var name = localStorage.getItem("quack:theme");
       var known = ["light", "dark", "dracula", "cosmicgirl"];
       if (known.indexOf(name) === -1) {
         name = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
@@ -646,7 +646,7 @@ import { readLocal, writeLocal } from "@/lib/persist";
 
 export type ThemeName = "light" | "dark" | "dracula" | "cosmicgirl";
 export const THEMES: ThemeName[] = ["light", "dark", "dracula", "cosmicgirl"];
-const STORAGE_KEY = "askdiff:theme";
+const STORAGE_KEY = "quack:theme";
 
 const current = (): ThemeName => {
   const attr = document.documentElement.getAttribute("data-theme");
@@ -673,7 +673,7 @@ Replace the `dark:`-based amber colors (lines ~14, ~21) with theme-agnostic clas
 
 - [ ] **Step 4: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS. (Note: `ThemeToggle.tsx` still imports the old hook shape — it is replaced in Task 9. If typecheck fails on it now, do Task 9 Step 1 immediately, or temporarily keep a `toggle` shim. Prefer proceeding straight to Task 9.)
 
 - [ ] **Step 5: Manually verify**
@@ -790,7 +790,7 @@ In `TopBar.tsx`, replace the `<ThemeToggle />` in the `ml-auto` cluster (line ~6
 
 - [ ] **Step 4: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 5: Manually verify**
@@ -1007,7 +1007,7 @@ git commit -m "feat(ui): add deterministic palette derivation and config parsing
 import { readLocal, writeLocal } from "@/lib/persist";
 
 const STYLE_ID = "quack-custom-theme";
-const STORE_KEY = "askdiff:custom-themes";
+const STORE_KEY = "quack:custom-themes";
 
 export const applyCustomTheme = (p: Palette): void => {
   const css = `:root[data-theme="custom"] {\n${TOKEN_KEYS.map((k) => (p[k] ? `  --${k}: ${p[k]};` : "")).filter(Boolean).join("\n")}\n}`;
@@ -1047,7 +1047,7 @@ Read `loadCustomThemes()`, render each saved name below the built-ins (selecting
 
 - [ ] **Step 5: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 6: Manually verify**
@@ -1140,7 +1140,7 @@ export const generateTheme = async (
   return palette;
 };
 ```
-Define `THEME_TOKEN_KEYS` in the server (copy the list from `palette.ts`'s `TOKEN_KEYS`, or move it into `@askdiff/protocol` and import from both sides — preferred to keep one source of truth). Confirm `spawn`, `childEnv` are already imported in `claude.ts`.
+Define `THEME_TOKEN_KEYS` in the server (copy the list from `palette.ts`'s `TOKEN_KEYS`, or move it into `@quack/protocol` and import from both sides — preferred to keep one source of truth). Confirm `spawn`, `childEnv` are already imported in `claude.ts`.
 
 - [ ] **Step 5: Dispatch in `index.ts`**
 
@@ -1148,7 +1148,7 @@ Add a `case "generate-theme"` next to the existing `case "ask"` (near line 210).
 
 - [ ] **Step 6: Typecheck + lint + tests**
 
-Run: `pnpm --filter @askdiff/server typecheck 2>/dev/null || pnpm -r typecheck; pnpm lint; pnpm test -- schemas`
+Run: `pnpm --filter @quack/server typecheck 2>/dev/null || pnpm -r typecheck; pnpm lint; pnpm test -- schemas`
 Expected: PASS.
 
 - [ ] **Step 7: Manually verify the call is non-resume + cheap**
@@ -1183,7 +1183,7 @@ Handle `theme-generated` (apply the returned palette via `applyCustomTheme`, upd
 
 - [ ] **Step 3: Typecheck + lint**
 
-Run: `pnpm --filter @askdiff/ui-browser typecheck && pnpm lint`
+Run: `pnpm --filter @quack/ui-browser typecheck && pnpm lint`
 Expected: PASS.
 
 - [ ] **Step 4: Manually verify end-to-end**
@@ -1206,7 +1206,7 @@ git commit -m "feat(ui): refine custom themes with a Haiku one-shot"
 
 - [ ] **Step 1: Write the report**
 
-Document, with `file:line` evidence: the per-ask prompt is preamble + selected chunk + question (`claude.ts:121-135`), with no full-diff/file injection; the dominant token cost is `--resume` rehydrating the session transcript, which grows with the conversation and is the core "remembers everything" feature (not removable without breaking it); the only mitigations are keeping asks focused and starting a fresh session when a thread gets long; and the new theme generation is a **non-resume** Haiku one-shot that fires only on theme creation. Note the `ASKDIFF_MODEL` env override (`claude.ts:22`) as a power-user lever to run asks on a cheaper model. Recommend no speculative refactor.
+Document, with `file:line` evidence: the per-ask prompt is preamble + selected chunk + question (`claude.ts:121-135`), with no full-diff/file injection; the dominant token cost is `--resume` rehydrating the session transcript, which grows with the conversation and is the core "remembers everything" feature (not removable without breaking it); the only mitigations are keeping asks focused and starting a fresh session when a thread gets long; and the new theme generation is a **non-resume** Haiku one-shot that fires only on theme creation. Note the `QUACK_MODEL` env override (`claude.ts:22`) as a power-user lever to run asks on a cheaper model. Recommend no speculative refactor.
 
 - [ ] **Step 2: Commit**
 
@@ -1220,6 +1220,6 @@ git commit -m "docs: add per-ask token audit"
 ## Self-Review Notes
 
 - **Spec coverage:** rebrand (Task 1) ✓; discoverability — `+`/cursor (Task 2) + hint (Task 3) ✓; file tree — resizable (Task 4) + colored icons (Tasks 5-6) ✓; themes — variable refactor (Task 7) + data-theme (Task 8) + Dracula/CosmicGirl + picker (Task 9) ✓; custom themes — derive/config (Task 10) + apply/persist/editor (Task 11) + Haiku (Tasks 12-13) ✓; token audit (Task 14) ✓.
-- **Type consistency:** `TOKEN_KEYS`/`Palette` defined in Task 10 and reused in 11/12/13; `ThemeName`/`useTheme` shape defined in Task 8 and consumed in 9/11; `iconForFile`/`IconKey` in Task 5 consumed in 6; `readLocal`/`writeLocal` in Task 3 consumed in 4/8/11. Consider moving `TOKEN_KEYS` into `@askdiff/protocol` (Task 12 Step 4) so server + UI share one definition.
+- **Type consistency:** `TOKEN_KEYS`/`Palette` defined in Task 10 and reused in 11/12/13; `ThemeName`/`useTheme` shape defined in Task 8 and consumed in 9/11; `iconForFile`/`IconKey` in Task 5 consumed in 6; `readLocal`/`writeLocal` in Task 3 consumed in 4/8/11. Consider moving `TOKEN_KEYS` into `@quack/protocol` (Task 12 Step 4) so server + UI share one definition.
 - **Ordering:** Task 8 briefly leaves `ThemeToggle.tsx` referencing the old hook; resolved immediately in Task 9 (noted in Task 8 Step 4). If executed by separate subagents, run 8 and 9 back-to-back.
 - **Known runtime confirmations** (call out during execution, not blockers): react-diff-view v3.3.1 `renderGutter` argument shape (Task 2); `claude` streaming vs `--output-format text` for the one-shot (Task 12).

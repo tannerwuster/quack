@@ -35,7 +35,7 @@ await build({
 
 if (!existsSync(uiDistDir)) {
   console.error(
-    `error: UI bundle not found at ${uiDistDir}. Run \`pnpm --filter @askdiff/ui-browser build\` first.`,
+    `error: UI bundle not found at ${uiDistDir}. Run \`pnpm --filter @quack/ui-browser build\` first.`,
   );
   process.exit(1);
 }
@@ -45,12 +45,12 @@ if (!existsSync(skillSrc)) {
   console.error(`error: SKILL.md not found at ${skillSrc}`);
   process.exit(1);
 }
-// Substitute every `ASKDIFF_VERSION="latest"` (Step 4c + Step 5) with this
+// Substitute every `QUACK_VERSION="latest"` (Step 4c + Step 5) with this
 // build's exact version so the published skill pins to a known release. The
-// in-repo source stays "latest" so /askdiff in this repo always pulls newest.
+// in-repo source stays "latest" so /quack in this repo always pulls newest.
 const skillBody = readFileSync(skillSrc, "utf8").replace(
-  /ASKDIFF_VERSION="latest"/g,
-  `ASKDIFF_VERSION="${pkg.version}"`,
+  /QUACK_VERSION="latest"/g,
+  `QUACK_VERSION="${pkg.version}"`,
 );
 writeFileSync(join(distDir, "skill.md"), skillBody);
 

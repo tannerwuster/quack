@@ -1,8 +1,8 @@
 {
-  "name": "@askdiff/server",
+  "name": "@quack/server",
   "version": "0.0.0",
   "private": true,
-  "description": "UI-agnostic WebSocket server for askdiff.",
+  "description": "UI-agnostic WebSocket server for quack.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
@@ -12,7 +12,7 @@
     }
   },
   "dependencies": {
-    "@askdiff/protocol": "workspace:*",
+    "@quack/protocol": "workspace:*",
     "ws": "^8.20.0",
     "zod": "^4.3.6"
   },

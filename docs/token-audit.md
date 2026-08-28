@@ -36,7 +36,7 @@ does, so a very long-running session makes each subsequent ask more expensive.
 - Keep asks scoped (already the default — only the highlighted chunk is sent).
 - Start a fresh Claude Code session when a thread has grown very long; new asks
   then resume a smaller transcript.
-- `ASKDIFF_MODEL` env var (read in `claude.ts`) overrides the ask model — a
+- `QUACK_MODEL` env var (read in `claude.ts`) overrides the ask model — a
   power-user way to run asks on a cheaper model.
 
 ## The custom-theme "Refine with Claude" call

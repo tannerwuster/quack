@@ -57,13 +57,13 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@askdiff/protocol':
+      '@quack/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@askdiff/server':
+      '@quack/server':
         specifier: workspace:*
         version: link:../server
-      '@askdiff/ui-browser':
+      '@quack/ui-browser':
         specifier: workspace:*
         version: link:../ui-browser
       '@types/node':
@@ -94,7 +94,7 @@ importers:
 
   packages/server:
     dependencies:
-      '@askdiff/protocol':
+      '@quack/protocol':
         specifier: workspace:*
         version: link:../protocol
       ws:
@@ -119,12 +119,12 @@ importers:
 
   packages/ui-browser:
     dependencies:
-      '@askdiff/protocol':
-        specifier: workspace:*
-        version: link:../protocol
       '@fontsource/jetbrains-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@quack/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       '@radix-ui/react-popover':
         specifier: ^1.1.6
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)

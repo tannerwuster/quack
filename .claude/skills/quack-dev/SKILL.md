@@ -7,7 +7,7 @@ allowed-tools: Bash
 
 Local-dev variant of `/quack`. Starts the WS server **and** Vite (HMR)
 against in-repo TypeScript instead of the published CLI. Vite proxies
-`/ws` to the WS server (port from `ASKDIFF_DEV_WS_TARGET`), so the UI
+`/ws` to the WS server (port from `QUACK_DEV_WS_TARGET`), so the UI
 uses the same same-origin `new WebSocket('ws://host/ws')` URL as in prod.
 
 Use when editing `packages/server` or `packages/ui-browser` for instant
@@ -168,7 +168,7 @@ if [ -f "$session_file" ]; then
   [ -n "$manifest_cwd" ] && project_cwd="$manifest_cwd"
 fi
 suffix="${session_id:-pid-$$}"
-diff_file="/tmp/askdiff-diff.$suffix"
+diff_file="/tmp/quack-diff.$suffix"
 ```
 
 No random component on the diff file — re-invoking `/quack` from the
@@ -205,12 +205,12 @@ user the requested diff is empty and don't launch. The working-tree path
 show "No changes."
 
 Set `volatile=1` for the working-tree path, `volatile=0` otherwise — Step 5
-forwards this as `ASKDIFF_DIFF_VOLATILE` (gates per-file mtime staleness).
+forwards this as `QUACK_DIFF_VOLATILE` (gates per-file mtime staleness).
 
 ## Step 3 — pick a short label
 
 Use the "Suggested label" column above. For the working-tree case, use
-`Working tree`. Keep it under ~40 chars. This becomes `ASKDIFF_DIFF_LABEL`.
+`Working tree`. Keep it under ~40 chars. This becomes `QUACK_DIFF_LABEL`.
 
 ## Step 4 — resolve the target session
 
@@ -284,7 +284,7 @@ single-line JSON: `{"candidates":[{"uuid":"…","count":N,"age":"…"}, …]}`.
 
 ```bash
 results=$(
-  pnpm --filter askdiff exec tsx src/index.ts resolve-session \
+  pnpm --filter quackdiff exec tsx src/index.ts resolve-session \
     --cwd "$project_cwd" \
     --invoking "$session_id" \
     --diff-file "$diff_file" \
@@ -330,10 +330,10 @@ set +e
 EXTRA_DIFF_FILE=""
 EXTRA_DIFF_LABEL=""
 
-log_file="/tmp/askdiff.$suffix.log"
-ui_log="/tmp/askdiff-ui.$suffix.log"
-ui_pid_file="/tmp/askdiff-ui.$suffix.pid"
-pid_file="/tmp/askdiff.$suffix.pid"
+log_file="/tmp/quack.$suffix.log"
+ui_log="/tmp/quack-ui.$suffix.log"
+ui_pid_file="/tmp/quack-ui.$suffix.pid"
+pid_file="/tmp/quack.$suffix.pid"
 
 # 1. Kill any previous server for this session and reuse its port —
 #    Vite's /ws proxy is locked to whatever port we passed when Vite
@@ -366,12 +366,12 @@ fi
 # 3. Start the WS server (in-repo via tsx).
 cd "$project_cwd" \
   && PORT=$port \
-     ASKDIFF_SESSION_ID="$attached_session" \
-     ASKDIFF_PROJECT_CWD="$project_cwd" \
-     ASKDIFF_DIFF_FILE="$EXTRA_DIFF_FILE" \
-     ASKDIFF_DIFF_LABEL="$EXTRA_DIFF_LABEL" \
-     ASKDIFF_DIFF_VOLATILE="${volatile:-0}" \
-     nohup pnpm --filter @askdiff/server exec tsx src/main.ts > "$log_file" 2>&1 &
+     QUACK_SESSION_ID="$attached_session" \
+     QUACK_PROJECT_CWD="$project_cwd" \
+     QUACK_DIFF_FILE="$EXTRA_DIFF_FILE" \
+     QUACK_DIFF_LABEL="$EXTRA_DIFF_LABEL" \
+     QUACK_DIFF_VOLATILE="${volatile:-0}" \
+     nohup pnpm --filter @quack/server exec tsx src/main.ts > "$log_file" 2>&1 &
 new_pid=$!
 disown
 sleep 1.5
@@ -379,7 +379,7 @@ echo "$new_pid $port" > "$pid_file"
 head -5 "$log_file"
 
 # 4. Start Vite only if our previous one isn't still alive (per session).
-#    Pass ASKDIFF_DEV_WS_TARGET so Vite's proxy points at the chosen port.
+#    Pass QUACK_DEV_WS_TARGET so Vite's proxy points at the chosen port.
 ui_running=false
 if [ -f "$ui_pid_file" ]; then
   prev_pid=$(cat "$ui_pid_file" 2>/dev/null)
@@ -389,8 +389,8 @@ if [ -f "$ui_pid_file" ]; then
 fi
 if ! $ui_running; then
   : > "$ui_log"
-  cd "$project_cwd" && ASKDIFF_DEV_WS_TARGET="ws://localhost:${port}" \
-    nohup pnpm --filter @askdiff/ui-browser dev > "$ui_log" 2>&1 &
+  cd "$project_cwd" && QUACK_DEV_WS_TARGET="ws://localhost:${port}" \
+    nohup pnpm --filter @quack/ui-browser dev > "$ui_log" 2>&1 &
   echo $! > "$ui_pid_file"
   disown
 fi

@@ -1,16 +1,16 @@
 // Standalone script entry. Used by:
 //   - the in-repo dev path (`tsx packages/server/src/main.ts`)
-//   - the `/askdiff-dev` skill
+//   - the `/quack-dev` skill
 //
-// The published `askdiff` CLI imports `startServer` from `./index` and
+// The published `quack` CLI imports `startServer` from `./index` and
 // runs its own bootstrap; it does not invoke this file.
-import { PROTOCOL_VERSION } from "@askdiff/protocol";
+import { PROTOCOL_VERSION } from "@quack/protocol";
 import { startServer, WS_PATH } from "./index";
 import { DEFAULT_IDLE_SHUTDOWN_MS, DEFAULT_PORT, PROJECT_NAME } from "./util/constants";
 import { resolveInitialSessionId } from "./util/session";
 
 function readIdleShutdownMs(): number {
-  const raw = process.env.ASKDIFF_IDLE_SHUTDOWN_MS;
+  const raw = process.env.QUACK_IDLE_SHUTDOWN_MS;
   if (raw === undefined) return DEFAULT_IDLE_SHUTDOWN_MS;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) ? n : DEFAULT_IDLE_SHUTDOWN_MS;
@@ -23,19 +23,19 @@ const isTruthy = (v: string | undefined): boolean => {
 };
 
 async function main(): Promise<void> {
-  const cwd = process.env["ASKDIFF_PROJECT_CWD"] ?? process.cwd();
+  const cwd = process.env["QUACK_PROJECT_CWD"] ?? process.cwd();
   const port = Number.parseInt(process.env["PORT"] ?? "0", 10) || DEFAULT_PORT;
   const idleShutdownMs = readIdleShutdownMs();
 
-  const diffFile = process.env["ASKDIFF_DIFF_FILE"];
+  const diffFile = process.env["QUACK_DIFF_FILE"];
   if (!diffFile) {
     console.error(
-      "fatal: ASKDIFF_DIFF_FILE is required. The askdiff skill must compute the diff and pass the path before launching the server.",
+      "fatal: QUACK_DIFF_FILE is required. The quack skill must compute the diff and pass the path before launching the server.",
     );
     process.exit(1);
   }
-  const diffLabel = process.env["ASKDIFF_DIFF_LABEL"];
-  const volatile = isTruthy(process.env["ASKDIFF_DIFF_VOLATILE"]);
+  const diffLabel = process.env["QUACK_DIFF_LABEL"];
+  const volatile = isTruthy(process.env["QUACK_DIFF_VOLATILE"]);
 
   const initialSession = await resolveInitialSessionId(cwd);
 

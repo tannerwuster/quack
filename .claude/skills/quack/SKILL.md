@@ -6,7 +6,7 @@ allowed-tools: Bash
 ---
 
 Compute the user's diff, write it to a temp file, then launch the
-`askdiff` CLI in the background pointing at that file.
+`quack` CLI in the background pointing at that file.
 
 > **Keep Steps 1–4 in sync with `.claude/skills/quack-dev/SKILL.md`** —
 > only the Step 4c `resolve-session` invocation and Step 5 launch differ
@@ -163,7 +163,7 @@ if [ -f "$session_file" ]; then
   [ -n "$manifest_cwd" ] && project_cwd="$manifest_cwd"
 fi
 suffix="${session_id:-pid-$$}"
-diff_file="/tmp/askdiff-diff.$suffix"
+diff_file="/tmp/quack-diff.$suffix"
 ```
 
 No random component on the diff file — re-invoking `/quack` from the
@@ -200,12 +200,12 @@ user the requested diff is empty and don't launch. The working-tree path
 show "No changes."
 
 Set `volatile=1` for the working-tree path, `volatile=0` otherwise — Step 5
-forwards this as `ASKDIFF_DIFF_VOLATILE` (gates per-file mtime staleness).
+forwards this as `QUACK_DIFF_VOLATILE` (gates per-file mtime staleness).
 
 ## Step 3 — pick a short label
 
 Use the "Suggested label" column above. For the working-tree case, use
-`Working tree`. Keep it under ~40 chars. This becomes `ASKDIFF_DIFF_LABEL`.
+`Working tree`. Keep it under ~40 chars. This becomes `QUACK_DIFF_LABEL`.
 
 ## Step 4 — resolve the target session
 
@@ -279,10 +279,10 @@ single-line JSON: `{"candidates":[{"uuid":"…","count":N,"age":"…"}, …]}`.
 
 ```bash
 # Pinned by the build script for the npm tarball; in-repo stays "latest".
-ASKDIFF_VERSION="latest"
+QUACK_VERSION="latest"
 
 results=$(
-  npx -y askdiff@"$ASKDIFF_VERSION" resolve-session \
+  npx -y quackdiff@"$QUACK_VERSION" resolve-session \
     --cwd "$project_cwd" \
     --invoking "$session_id" \
     --diff-file "$diff_file" \
@@ -323,15 +323,15 @@ Run as a single Bash command. Substitute `EXTRA_DIFF_FILE` and
 set +e
 
 # Pinned by the build script for the npm tarball; in-repo stays "latest".
-ASKDIFF_VERSION="latest"
+QUACK_VERSION="latest"
 
 # Filled in by Steps 2/3 — keep Step 2's preamble (session_id, project_cwd,
 # suffix) and Step 4's resolution (attached_session, session_source) above.
 EXTRA_DIFF_FILE=""
 EXTRA_DIFF_LABEL=""
 
-log_file="/tmp/askdiff.$suffix.log"
-pid_file="/tmp/askdiff.$suffix.pid"
+log_file="/tmp/quack.$suffix.log"
+pid_file="/tmp/quack.$suffix.pid"
 
 # 1. Kill any previous server for this session and reuse its port — keeps
 #    the open browser tab valid (the WS auto-reconnects).
@@ -357,12 +357,12 @@ port_arg=()
 [ -n "$saved_port" ] && port_arg=(--port "$saved_port")
 
 cd "$project_cwd" \
-  && ASKDIFF_SESSION_ID="$attached_session" \
-     ASKDIFF_PROJECT_CWD="$project_cwd" \
-     ASKDIFF_DIFF_FILE="$EXTRA_DIFF_FILE" \
-     ASKDIFF_DIFF_LABEL="$EXTRA_DIFF_LABEL" \
-     ASKDIFF_DIFF_VOLATILE="${volatile:-0}" \
-     nohup npx -y askdiff@"$ASKDIFF_VERSION" --no-open "${port_arg[@]}" > "$log_file" 2>&1 &
+  && QUACK_SESSION_ID="$attached_session" \
+     QUACK_PROJECT_CWD="$project_cwd" \
+     QUACK_DIFF_FILE="$EXTRA_DIFF_FILE" \
+     QUACK_DIFF_LABEL="$EXTRA_DIFF_LABEL" \
+     QUACK_DIFF_VOLATILE="${volatile:-0}" \
+     nohup npx -y quackdiff@"$QUACK_VERSION" --no-open "${port_arg[@]}" > "$log_file" 2>&1 &
 new_pid=$!
 disown
 
@@ -392,16 +392,16 @@ echo "Log: $log_file"
 echo "PID: $new_pid (saved to $pid_file)"
 
 # 4. Update check (after launch, never blocking; skipped at "latest" or
-#    when ASKDIFF_SKIP_UPDATE_CHECK is set; network failures silently ignored).
-if [ -z "$ASKDIFF_SKIP_UPDATE_CHECK" ] && [ "$ASKDIFF_VERSION" != "latest" ]; then
-  latest=$(curl -fsSL --max-time 2 https://registry.npmjs.org/askdiff/latest 2>/dev/null \
+#    when QUACK_SKIP_UPDATE_CHECK is set; network failures silently ignored).
+if [ -z "$QUACK_SKIP_UPDATE_CHECK" ] && [ "$QUACK_VERSION" != "latest" ]; then
+  latest=$(curl -fsSL --max-time 2 https://registry.npmjs.org/quackdiff/latest 2>/dev/null \
     | sed -n 's/.*"version":"\([^"]*\)".*/\1/p' | head -1)
-  if [ -n "$latest" ] && [ "$latest" != "$ASKDIFF_VERSION" ]; then
+  if [ -n "$latest" ] && [ "$latest" != "$QUACK_VERSION" ]; then
     echo ""
-    echo "── A new version of askdiff is available ──"
-    echo "  installed: $ASKDIFF_VERSION"
+    echo "── A new version of quack is available ──"
+    echo "  installed: $QUACK_VERSION"
     echo "  latest:    $latest"
-    echo "  to update: npx -y askdiff@latest install-skill --force"
+    echo "  to update: npx -y quackdiff@latest install-skill --force"
     echo "             (add --global if you installed user-level)"
   fi
 fi

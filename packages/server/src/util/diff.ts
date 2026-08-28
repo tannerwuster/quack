@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import type { DiffFile, DiffHunk } from "@askdiff/protocol";
+import type { DiffFile, DiffHunk } from "@quack/protocol";
 
 // Failure to read or parse the diff file. The skill is the only producer of
 // these files; surfacing this distinct class lets the WS layer attach a

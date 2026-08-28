@@ -47,7 +47,7 @@ jobs:
 
       - name: Publish to npm
         # No NPM_TOKEN — auth is via OIDC (Trusted Publisher must be
-        # configured for `askdiff` on npmjs.com pointing at this repo +
+        # configured for `quackdiff` on npmjs.com pointing at this repo +
         # workflow). The `id-token: write` permission above is what lets
         # the runner exchange its OIDC token for an npm publish token.
         working-directory: packages/cli

@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-execSync("pnpm --filter @askdiff/ui-browser build", { stdio: "inherit", cwd: root });
-execSync("pnpm --filter askdiff run build", { stdio: "inherit", cwd: root });
+execSync("pnpm --filter @quack/ui-browser build", { stdio: "inherit", cwd: root });
+execSync("pnpm --filter quackdiff run build", { stdio: "inherit", cwd: root });
 
 const readme = resolve(root, "README.md");
 if (existsSync(readme)) {

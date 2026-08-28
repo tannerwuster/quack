@@ -1,6 +1,6 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-import type { DiffFile } from "@askdiff/protocol";
+import type { DiffFile } from "@quack/protocol";
 
 export interface StalenessResult {
   stale: boolean;

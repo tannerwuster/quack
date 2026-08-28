@@ -1,18 +1,18 @@
 {
-  "name": "askdiff",
+  "name": "quackdiff",
   "version": "0.1.0",
-  "description": "Treat your AI as a coworker — ask questions about its changes in a diff viewer.",
+  "description": "Review your AI's diff in the browser and ask about it in the same Claude Code session that wrote it.",
   "type": "module",
-  "bin": { "askdiff": "./dist/index.js" },
+  "bin": { "quack": "./dist/index.js" },
   "files": ["dist", "README.md"],
   "license": "MIT",
-  "author": "narghev",
+  "author": "Tanner A. Wuster",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/narghev/askdiff.git"
+    "url": "git+https://github.com/tannerwuster/quack.git"
   },
-  "homepage": "https://github.com/narghev/askdiff",
-  "bugs": { "url": "https://github.com/narghev/askdiff/issues" },
+  "homepage": "https://github.com/tannerwuster/quack",
+  "bugs": { "url": "https://github.com/tannerwuster/quack/issues" },
   "keywords": [
     "claude-code",
     "claude",
@@ -22,7 +22,9 @@
     "code-review",
     "review",
     "websocket",
-    "ai"
+    "ai",
+    "quack",
+    "code-quality"
   ],
   "engines": { "node": ">=18" },
   "dependencies": {
@@ -32,9 +34,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@askdiff/protocol": "workspace:*",
-    "@askdiff/server": "workspace:*",
-    "@askdiff/ui-browser": "workspace:*",
+    "@quack/protocol": "workspace:*",
+    "@quack/server": "workspace:*",
+    "@quack/ui-browser": "workspace:*",
     "@types/node": "^25.6.0",
     "@types/ws": "^8.18.1",
     "esbuild": "^0.27.0",

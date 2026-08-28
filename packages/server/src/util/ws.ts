@@ -1,5 +1,5 @@
 import type { WebSocket } from "ws";
-import type { ServerMessage } from "@askdiff/protocol";
+import type { ServerMessage } from "@quack/protocol";
 import type { ServerState } from "../index";
 
 export function send(ws: WebSocket, message: ServerMessage): void {

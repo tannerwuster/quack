@@ -16,7 +16,7 @@ coverage/
 
 .claude/settings.local.json
 
-# Local skill management — not part of askdiff
+# Local skill management — not part of quack
 .agents/
 skills-lock.json
 

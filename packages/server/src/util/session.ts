@@ -28,7 +28,7 @@ export const resolveInitialSessionId = async (cwd: string): Promise<string> => {
   const envSession = process.env[`${PROJECT_NAME_UPPER_CASE}_SESSION_ID`];
   if (!envSession) {
     throw new Error(
-      `${PROJECT_NAME_UPPER_CASE}_SESSION_ID is required. The askdiff skill always sets it; if you're running the server by hand, set the env var or pass --session.`,
+      `${PROJECT_NAME_UPPER_CASE}_SESSION_ID is required. The quack skill always sets it; if you're running the server by hand, set the env var or pass --session.`,
     );
   }
 

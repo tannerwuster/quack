@@ -30,7 +30,7 @@ const TYPE_CHIPS: { type: string; label: string }[] = [
 export const FileTree = () => {
   const diff = useStore((s) => s.diff);
   const [width, setWidth] = useState(() => {
-    const raw = Number(readLocal("askdiff:sidebar-width"));
+    const raw = Number(readLocal("quack:sidebar-width"));
     return Number.isFinite(raw) && raw >= MIN_W && raw <= MAX_W ? raw : 256;
   });
 
@@ -152,7 +152,7 @@ export const FileTree = () => {
             setWidth(clampW(startW + ev.clientX - startX));
           };
           const onUp = (ev: MouseEvent) => {
-            writeLocal("askdiff:sidebar-width", String(clampW(startW + ev.clientX - startX)));
+            writeLocal("quack:sidebar-width", String(clampW(startW + ev.clientX - startX)));
             document.removeEventListener("mousemove", onMove);
             document.removeEventListener("mouseup", onUp);
           };

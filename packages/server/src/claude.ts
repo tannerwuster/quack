@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
-import { THEME_TOKEN_KEYS } from "@askdiff/protocol";
-import type { AskMessage } from "@askdiff/protocol";
+import { THEME_TOKEN_KEYS } from "@quack/protocol";
+import type { AskMessage } from "@quack/protocol";
 
 export class ClaudeCliError extends Error {
   constructor(message: string, override readonly cause?: unknown) {
@@ -20,7 +20,7 @@ export async function* streamAnswer(
   params: StreamAnswerParams,
 ): AsyncGenerator<string, void, void> {
   const prompt = buildPrompt(params.ask);
-  const model = params.ask.model ?? process.env["ASKDIFF_MODEL"];
+  const model = params.ask.model ?? process.env["QUACK_MODEL"];
   const args = buildArgs(params.sessionId, model);
 
   const child = spawn("claude", args, {
@@ -120,9 +120,9 @@ const buildArgs = (sessionId: string, model: string | undefined): string[] => {
 }
 
 const buildPrompt = (ask: AskMessage): string => {
-  return `You are answering a question in askdiff, a read-only code-review diff viewer. This is a discussion turn, not an implementation turn.
+  return `You are answering a question in quack, a read-only code-review diff viewer. This is a discussion turn, not an implementation turn.
 
-**Do not modify the code.** Do not call Edit, Write, NotebookEdit, MultiEdit, or any Bash command that mutates the filesystem (no \`sed -i\`, \`>\`, \`mv\`, \`rm\`, \`git commit\`, \`git checkout\`, etc.). If the user asks you to "fix", "apply", "change", "refactor", "rename", "implement", or otherwise edit something, describe what the change should look like in your reply (prose, or a code block they can copy) but do not perform it. The user will apply changes themselves outside askdiff if they want to act on your suggestion.
+**Do not modify the code.** Do not call Edit, Write, NotebookEdit, MultiEdit, or any Bash command that mutates the filesystem (no \`sed -i\`, \`>\`, \`mv\`, \`rm\`, \`git commit\`, \`git checkout\`, etc.). If the user asks you to "fix", "apply", "change", "refactor", "rename", "implement", or otherwise edit something, describe what the change should look like in your reply (prose, or a code block they can copy) but do not perform it. The user will apply changes themselves outside quack if they want to act on your suggestion.
 
 Read-only inspection (Read, Grep, Glob, git read commands) is fine when needed, but your prior edits in this session are already in your context, so usually you can answer from memory.
 

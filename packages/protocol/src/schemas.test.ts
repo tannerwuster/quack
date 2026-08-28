@@ -25,7 +25,7 @@ import {
 
 describe("PROTOCOL_VERSION", () => {
   it("is the v1 wire identifier", () => {
-    expect(PROTOCOL_VERSION).toBe("askdiff/1");
+    expect(PROTOCOL_VERSION).toBe("quack/1");
   });
 });
 
@@ -187,7 +187,7 @@ describe("HelloMessageSchema", () => {
         .success,
     ).toBe(true);
     expect(
-      HelloMessageSchema.safeParse({ type: "hello", protocol: "askdiff/2", project: "/p" }).success,
+      HelloMessageSchema.safeParse({ type: "hello", protocol: "quack/2", project: "/p" }).success,
     ).toBe(false);
   });
 

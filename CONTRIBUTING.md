@@ -1,13 +1,13 @@
-# Contributing to askdiff
+# Contributing to quack
 
-Thanks for poking at askdiff. This doc covers the dev loop, repo layout,
-and the in-repo `/askdiff-dev` skill you'll use to test changes.
+Thanks for poking at quack. This doc covers the dev loop, repo layout,
+and the in-repo `/quack-dev` skill you'll use to test changes.
 
 ## Setup
 
 ```bash
-git clone https://github.com/narghev/askdiff
-cd askdiff
+git clone https://github.com/tannerwuster/quack
+cd quack
 pnpm install
 pnpm test
 pnpm lint
@@ -15,14 +15,14 @@ pnpm run build
 ```
 
 Node 24+ (current active LTS) and pnpm are the only requirements. There is
-no Anthropic API key to set — askdiff shells out to the `claude` CLI.
+no Anthropic API key to set — quack shells out to the `claude` CLI.
 
 ## Architecture
 
 The npm package (`packages/cli`) is a single esbuild-bundled Node binary
 that hosts an HTTP server (serving the prebuilt UI bundle in `dist/ui/`)
 and a WebSocket on the same port at `/ws`. The CLI imports `startServer`
-from `@askdiff/server`, which spawns `claude --resume` per ask and
+from `@quack/server`, which spawns `claude --resume` per ask and
 forwards `text_delta` events to the client. The browser UI
 (`packages/ui-browser`) is React 19 + Vite + Tailwind v4 + zustand, with
 `react-diff-view` for rendering and refractor for syntax highlighting.
@@ -36,15 +36,15 @@ launch flow.
 From a Claude Code session in this repo:
 
 ```
-/askdiff-dev                    # first launch: Vite + WS server with HMR
-/askdiff-dev                    # again: kills the WS server, restarts on same port with a fresh diff
-/askdiff-dev last commit        # description-driven: HEAD~1..HEAD
+/quack-dev                    # first launch: Vite + WS server with HMR
+/quack-dev                    # again: kills the WS server, restarts on same port with a fresh diff
+/quack-dev last commit        # description-driven: HEAD~1..HEAD
 ```
 
-`/askdiff-dev` runs the in-repo TypeScript via `tsx` and pairs the WS
+`/quack-dev` runs the in-repo TypeScript via `tsx` and pairs the WS
 server with a local Vite dev server, so UI changes hot-reload. Use it
-(not `/askdiff`) to test changes to the server, the CLI, or the
-natural-language flow — `/askdiff` always pulls `npx -y askdiff@latest`,
+(not `/quack`) to test changes to the server, the CLI, or the
+natural-language flow — `/quack` always pulls `npx -y quackdiff@latest`,
 so unpublished work won't run there.
 
 The WS server idle-shuts after 5 min with no connected clients; Vite is
@@ -61,21 +61,21 @@ node packages/cli/dist/index.js --port 7838
 
 ## Configuration
 
-The skill resolves everything for the normal `/askdiff` flow, so users
+The skill resolves everything for the normal `/quack` flow, so users
 shouldn't ever need to set these. They exist for power use, debugging,
 and running the CLI directly outside a Claude Code session.
 
 | Variable | Default | Notes |
 |---|---|---|
 | `PORT` | `7837` | Auto-bumps if taken. |
-| `ASKDIFF_SESSION_ID` | (resolved from `$PPID`) | Force a specific Claude Code session UUID. |
-| `ASKDIFF_PROJECT_CWD` | (parent CC manifest, then `process.cwd()`) | Project directory to diff. |
-| `ASKDIFF_MODEL` | (inherits resumed session's model) | Override the Claude model for asks. |
+| `QUACK_SESSION_ID` | (resolved from `$PPID`) | Force a specific Claude Code session UUID. |
+| `QUACK_PROJECT_CWD` | (parent CC manifest, then `process.cwd()`) | Project directory to diff. |
+| `QUACK_MODEL` | (inherits resumed session's model) | Override the Claude model for asks. |
 | `CLAUDE_CONFIG_DIR` | `~/.claude` | Where Claude Code stores `sessions/`, `projects/`. |
-| `ASKDIFF_SKIP_UPDATE_CHECK` | unset | Set to `1` to suppress the post-launch npm version check. |
+| `QUACK_SKIP_UPDATE_CHECK` | unset | Set to `1` to suppress the post-launch npm version check. |
 
-CLI flags also work (`askdiff --port 7838 --no-open --session <uuid>`);
-run `askdiff --help` for the full list.
+CLI flags also work (`quack --port 7838 --no-open --session <uuid>`);
+run `quack --help` for the full list.
 
 ## Tests and lint
 
@@ -83,13 +83,13 @@ run `askdiff --help` for the full list.
 pnpm test                                              # jest, all packages
 pnpm test:watch
 pnpm lint                                              # eslint, all packages
-pnpm --filter @askdiff/protocol  exec tsc --noEmit
-pnpm --filter @askdiff/server    exec tsc --noEmit
-pnpm --filter @askdiff/ui-browser exec tsc --noEmit
-pnpm --filter @askdiff/ui-browser build                # production build sanity check
+pnpm --filter @quack/protocol  exec tsc --noEmit
+pnpm --filter @quack/server    exec tsc --noEmit
+pnpm --filter @quack/ui-browser exec tsc --noEmit
+pnpm --filter @quack/ui-browser build                # production build sanity check
 ```
 
-Tests are co-located as `*.test.ts`. `@askdiff/ui-browser` deliberately
+Tests are co-located as `*.test.ts`. `@quack/ui-browser` deliberately
 has no tests yet — the surface is too new and visual to lock in. Add
 tests once the UX is stable; React Testing Library is the natural fit.
 
@@ -109,7 +109,7 @@ the prompt, don't run git from the server).
 ## Pull requests
 
 - Match existing style; run `pnpm lint` and `pnpm test` before pushing.
-- Keep `.claude/skills/askdiff/SKILL.md` and `.claude/skills/askdiff-dev/SKILL.md`
+- Keep `.claude/skills/quack/SKILL.md` and `.claude/skills/quack-dev/SKILL.md`
   in sync on Steps 1–4 prose, table, and routing — only the launch
   command differs.
 - If you change the wire protocol, update `SPEC.md` in the same PR.

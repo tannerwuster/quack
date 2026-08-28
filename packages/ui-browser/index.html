@@ -12,11 +12,11 @@
       (function () {
         try {
           var root = document.documentElement;
-          var name = localStorage.getItem("askdiff:theme");
+          var name = localStorage.getItem("quack:theme");
           if (name === "custom") {
             root.setAttribute("data-theme", "custom");
             root.classList.add("dark");
-            var active = localStorage.getItem("askdiff:custom-active");
+            var active = localStorage.getItem("quack:custom-active");
             if (active) {
               var p = JSON.parse(active);
               var css = ':root[data-theme="custom"]{';

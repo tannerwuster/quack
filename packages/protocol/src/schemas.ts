@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ClientMessage } from "./types";
 
-export const PROTOCOL_VERSION = "askdiff/1";
+export const PROTOCOL_VERSION = "quack/1";
 
 // The CSS-variable names (without the leading --) a custom theme fills.
 // Shared so the server's theme-generation prompt and the UI agree on the
@@ -79,12 +79,12 @@ export const DiffMessageSchema = z.object({
   files: z.array(DiffFileSchema),
   // Short human description of *what* this diff shows ("HEAD~1..HEAD",
   // "main…feature/x", "Working tree"). The skill sets it via the
-  // ASKDIFF_DIFF_LABEL env var; absent for legacy clients.
+  // QUACK_DIFF_LABEL env var; absent for legacy clients.
   label: z.string().optional(),
   // Set true when the server detected that one or more files in the diff
   // have been modified (or removed) since the diff was captured. Only
   // populated for "volatile" diffs — i.e. working-tree diffs the skill
-  // marked with ASKDIFF_DIFF_VOLATILE=1. Description-based diffs
+  // marked with QUACK_DIFF_VOLATILE=1. Description-based diffs
   // (HEAD~1..HEAD, main…feature/x) never set this since their content
   // doesn't depend on the working tree.
   stale: z.boolean().optional(),
@@ -117,7 +117,7 @@ export const PongMessageSchema = z.object({
 
 // Read-only — emitted once on connect so the UI can display "asks go to
 // this session." There is no client-side counterpart: session attachment
-// is locked in at server startup via ASKDIFF_SESSION_ID.
+// is locked in at server startup via QUACK_SESSION_ID.
 export const SessionMessageSchema = z.object({
   type: z.literal("session"),
   session_id: z.string().min(1),

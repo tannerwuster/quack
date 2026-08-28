@@ -24,6 +24,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm test
-      - run: pnpm --filter @askdiff/protocol exec tsc --noEmit
-      - run: pnpm --filter @askdiff/server exec tsc --noEmit
-      - run: pnpm --filter @askdiff/ui-browser exec tsc --noEmit
+      - run: pnpm --filter @quack/protocol exec tsc --noEmit
+      - run: pnpm --filter @quack/server exec tsc --noEmit
+      - run: pnpm --filter @quack/ui-browser exec tsc --noEmit

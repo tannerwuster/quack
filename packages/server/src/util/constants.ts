@@ -1,4 +1,4 @@
-export const PROJECT_NAME = 'askdiff';
+export const PROJECT_NAME = 'quack';
 export const PROJECT_NAME_UPPER_CASE = PROJECT_NAME.toUpperCase();
 
 export const DEFAULT_PORT = 7837;

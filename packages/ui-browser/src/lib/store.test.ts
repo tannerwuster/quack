@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "@jest/globals";
-import type { ClientMessage } from "@askdiff/protocol";
+import type { ClientMessage } from "@quack/protocol";
 import { useStore } from "./store";
 
 const resetAsks = () => {

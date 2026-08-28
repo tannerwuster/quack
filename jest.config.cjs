@@ -12,9 +12,9 @@ module.exports = {
     ],
   },
   moduleNameMapper: {
-    // Resolve workspace package "@askdiff/protocol" to its source so
+    // Resolve workspace package "@quack/protocol" to its source so
     // ts-jest can transform it without a build step.
-    "^@askdiff/protocol$": "<rootDir>/packages/protocol/src/index.ts",
+    "^@quack/protocol$": "<rootDir>/packages/protocol/src/index.ts",
     // ui-browser's "@/…" alias, so its pure-logic units are testable.
     "^@/(.*)$": "<rootDir>/packages/ui-browser/src/$1",
   },

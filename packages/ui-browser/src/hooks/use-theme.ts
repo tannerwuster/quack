@@ -19,7 +19,7 @@ export const THEMES: ThemeName[] = [
   "cosmicgirl",
 ];
 
-const STORAGE_KEY = "askdiff:theme";
+const STORAGE_KEY = "quack:theme";
 
 // May return a built-in name or "custom".
 const current = (): string => document.documentElement.getAttribute("data-theme") ?? "light";

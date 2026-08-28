@@ -1,8 +1,8 @@
 {
-  "name": "askdiff-monorepo",
+  "name": "quack-monorepo",
   "private": true,
   "version": "0.0.0",
-  "description": "Treat your AI as a coworker — ask questions about its changes in a diff viewer.",
+  "description": "Review your AI's diff in the browser and ask about it in the same Claude Code session that wrote it.",
   "license": "MIT",
   "packageManager": "pnpm@10.33.2",
   "engines": {

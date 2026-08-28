@@ -4,7 +4,7 @@
     {
       "name": "quack-ui",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@askdiff/ui-browser", "dev", "--port", "5173"],
+      "runtimeArgs": ["--filter", "@quack/ui-browser", "dev", "--port", "5173"],
       "port": 5173
     }
   ]

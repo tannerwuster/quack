@@ -51,11 +51,11 @@ describe("session-resolution filesystem helpers", () => {
   let configDir: string;
   let projectCwd: string;
   const originalConfigDir = process.env.CLAUDE_CONFIG_DIR;
-  const originalEnvSession = process.env.ASKDIFF_SESSION_ID;
+  const originalEnvSession = process.env.QUACK_SESSION_ID;
 
   beforeEach(() => {
     // Isolated tmp config dir per test.
-    configDir = mkdtempSync(join(tmpdir(), "askdiff-test-"));
+    configDir = mkdtempSync(join(tmpdir(), "quack-test-"));
     process.env.CLAUDE_CONFIG_DIR = configDir;
 
     // Mock project cwd; must be encoded by replacing / with -.
@@ -67,15 +67,15 @@ describe("session-resolution filesystem helpers", () => {
     writeFileSync(join(projectDir, `${VALID_UUID}.jsonl`), "");
     writeFileSync(join(projectDir, `${ANOTHER_UUID}.jsonl`), "");
 
-    delete process.env.ASKDIFF_SESSION_ID;
+    delete process.env.QUACK_SESSION_ID;
   });
 
   afterEach(() => {
     rmSync(configDir, { recursive: true, force: true });
     if (originalConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR;
     else process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
-    if (originalEnvSession === undefined) delete process.env.ASKDIFF_SESSION_ID;
-    else process.env.ASKDIFF_SESSION_ID = originalEnvSession;
+    if (originalEnvSession === undefined) delete process.env.QUACK_SESSION_ID;
+    else process.env.QUACK_SESSION_ID = originalEnvSession;
   });
 
   describe("sessionExists", () => {
@@ -100,24 +100,24 @@ describe("session-resolution filesystem helpers", () => {
   describe("resolveInitialSessionId", () => {
     it("throws when env is unset (server requires a session)", async () => {
       await expect(resolveInitialSessionId(projectCwd)).rejects.toThrow(
-        /ASKDIFF_SESSION_ID is required/,
+        /QUACK_SESSION_ID is required/,
       );
     });
 
     it("returns the env session when valid and present on disk", async () => {
-      process.env.ASKDIFF_SESSION_ID = VALID_UUID;
+      process.env.QUACK_SESSION_ID = VALID_UUID;
       await expect(resolveInitialSessionId(projectCwd)).resolves.toBe(VALID_UUID);
     });
 
     it("throws when env is set but the session JSONL is missing (hard startup fail)", async () => {
-      process.env.ASKDIFF_SESSION_ID = "00000000-0000-0000-0000-000000000000";
+      process.env.QUACK_SESSION_ID = "00000000-0000-0000-0000-000000000000";
       await expect(resolveInitialSessionId(projectCwd)).rejects.toThrow(
         /not a valid Claude Code session/,
       );
     });
 
     it("throws when env is set to a malformed UUID (via sessionExists)", async () => {
-      process.env.ASKDIFF_SESSION_ID = "garbage";
+      process.env.QUACK_SESSION_ID = "garbage";
       await expect(resolveInitialSessionId(projectCwd)).rejects.toThrow(/invalid session id/);
     });
   });

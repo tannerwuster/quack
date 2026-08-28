@@ -1,8 +1,8 @@
 {
-  "name": "@askdiff/ui-browser",
+  "name": "@quack/ui-browser",
   "version": "0.0.0",
   "private": true,
-  "description": "Browser UI client for askdiff.",
+  "description": "Browser UI client for quack.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@askdiff/protocol": "workspace:*",
+    "@quack/protocol": "workspace:*",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@radix-ui/react-popover": "^1.1.6",
     "@radix-ui/react-scroll-area": "^1.2.3",

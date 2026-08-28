@@ -14,7 +14,7 @@ import {
   parseClientMessage,
   type AskMessage,
   type GenerateThemeMessage,
-} from "@askdiff/protocol";
+} from "@quack/protocol";
 import { DEFAULT_HOST, DEFAULT_IDLE_SHUTDOWN_MS } from "./util/constants";
 import { send } from "./util/ws";
 

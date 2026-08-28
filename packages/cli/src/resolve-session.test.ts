@@ -63,7 +63,7 @@ describe("resolveSession", () => {
   let projectDir: string;
 
   beforeEach(() => {
-    configDir = mkdtempSync(join(tmpdir(), "askdiff-resolve-"));
+    configDir = mkdtempSync(join(tmpdir(), "quack-resolve-"));
     projectDir = join(configDir, "projects", "-fake-project-path");
     mkdirSync(projectDir, { recursive: true });
   });

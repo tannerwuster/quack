@@ -1,4 +1,4 @@
-import { THEME_TOKEN_KEYS } from "@askdiff/protocol";
+import { THEME_TOKEN_KEYS } from "@quack/protocol";
 import { readLocal, writeLocal } from "@/lib/persist";
 
 // Single source of truth lives in the protocol package (shared with the
@@ -107,8 +107,8 @@ export const paletteFromConfig = (raw: string): Palette => {
 };
 
 const STYLE_ID = "quack-custom-theme";
-const THEMES_KEY = "askdiff:custom-themes";
-const ACTIVE_KEY = "askdiff:custom-active";
+const THEMES_KEY = "quack:custom-themes";
+const ACTIVE_KEY = "quack:custom-active";
 
 const paletteToCss = (p: Palette): string => {
   const decls = TOKEN_KEYS.map((k) => (p[k] ? `  --${k}: ${p[k] ?? ""};` : ""))
@@ -138,7 +138,7 @@ export const previewCustomTheme = (p: Palette): void => {
 /** Apply a custom palette and persist it as the active theme. */
 export const activateCustomTheme = (p: Palette): void => {
   injectCustomStyle(p);
-  writeLocal("askdiff:theme", "custom");
+  writeLocal("quack:theme", "custom");
   writeLocal(ACTIVE_KEY, JSON.stringify(p));
 };
 
