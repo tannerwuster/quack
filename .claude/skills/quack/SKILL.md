@@ -351,8 +351,10 @@ if [ -f "$pid_file" ]; then
 fi
 
 # 2. Launch. Reuse port if we have one; otherwise the CLI picks 7837+.
-port_arg=""
-[ -n "$saved_port" ] && port_arg="--port $saved_port"
+#    Array, not a string — zsh doesn't word-split unquoted parameters, so a
+#    "--port N" string arrives as one argv entry and the CLI rejects it.
+port_arg=()
+[ -n "$saved_port" ] && port_arg=(--port "$saved_port")
 
 cd "$project_cwd" \
   && ASKDIFF_SESSION_ID="$attached_session" \
@@ -360,7 +362,7 @@ cd "$project_cwd" \
      ASKDIFF_DIFF_FILE="$EXTRA_DIFF_FILE" \
      ASKDIFF_DIFF_LABEL="$EXTRA_DIFF_LABEL" \
      ASKDIFF_DIFF_VOLATILE="${volatile:-0}" \
-     nohup npx -y askdiff@"$ASKDIFF_VERSION" --no-open $port_arg > "$log_file" 2>&1 &
+     nohup npx -y askdiff@"$ASKDIFF_VERSION" --no-open "${port_arg[@]}" > "$log_file" 2>&1 &
 new_pid=$!
 disown
 
