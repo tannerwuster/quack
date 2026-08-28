@@ -49,9 +49,13 @@ export const TopBar = () => {
         )}
       </div>
       {project && (
-        <div className="ml-1 truncate font-mono text-xs text-muted-foreground">
-          {project}
-        </div>
+        <Badge
+          variant="muted"
+          className="min-w-0 max-w-md font-mono text-[0.65rem]"
+          title={project}
+        >
+          <span className="truncate">{project}</span>
+        </Badge>
       )}
       <div className="ml-auto flex items-center gap-3">
         {sessionId && (
