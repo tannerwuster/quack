@@ -136,7 +136,12 @@ export const CommentWidget = ({ file, fromLine, toLine, chunk, asks }: Props) =>
             placeholder={hasAsks ? "Reply or follow up…" : "Ask Claude about this code…"}
             rows={2}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              // Submit on ⌘/Ctrl+Enter or Shift+Enter; plain Enter still
+              // inserts a newline so multi-line questions stay possible.
+              if (
+                e.key === "Enter" &&
+                (e.metaKey || e.ctrlKey || e.shiftKey)
+              ) {
                 e.preventDefault();
                 submit();
               } else if (e.key === "Escape" && !hasAsks) {
@@ -157,7 +162,7 @@ export const CommentWidget = ({ file, fromLine, toLine, chunk, asks }: Props) =>
                 size="sm"
                 disabled={!canSend}
                 onClick={submit}
-                title="Send (⌘/Ctrl+Enter)"
+                title="Send (⌘/Ctrl+Enter or Shift+Enter)"
               >
                 <Send className="mr-1 size-3.5" />
                 Send
