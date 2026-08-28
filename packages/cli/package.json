@@ -1,6 +1,6 @@
 {
   "name": "quackdiff",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Review your AI's diff in the browser and ask about it in the same Claude Code session that wrote it.",
   "type": "module",
   "bin": {
