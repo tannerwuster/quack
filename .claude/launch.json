@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "quack-ui",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@askdiff/ui-browser", "dev", "--port", "5173"],
+      "port": 5173
+    }
+  ]
+}

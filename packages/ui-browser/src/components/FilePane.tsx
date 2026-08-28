@@ -13,7 +13,10 @@ import {
   rangeFromSelectedChanges,
 } from "@/lib/selection";
 import { useDiffTokens } from "@/hooks/use-diff-tokens";
+import { hasNoTextualChanges, nonTextLabel, nonTextReason } from "@/lib/diff-utils";
+import { cn } from "@/lib/utils";
 import { CommentWidget } from "./CommentWidget";
+import { FileImage } from "lucide-react";
 
 type OpenComposer = { fromLine: number; toLine: number; chunk: string };
 
@@ -25,11 +28,23 @@ type Drag =
 const IDLE: Drag = { phase: "idle" };
 
 export const FilePane = ({ file }: { file: FileData }) => {
+  // Binary blobs, pure renames and mode-only changes arrive with no hunks;
+  // there's nothing to diff, so show a graceful panel instead of an empty
+  // pane. Branch here — before any hook — so hook order stays stable.
+  if (hasNoTextualChanges(file)) {
+    return <NonTextPanel file={file} />;
+  }
+  return <TextDiff file={file} />;
+};
+
+const TextDiff = ({ file }: { file: FileData }) => {
   const path = filePath(file);
   const asks = useStore((s) => s.asks);
   const askOrder = useStore((s) => s.askOrder);
   const openAnchors = useStore((s) => s.openAnchors);
   const openComposer = useStore((s) => s.openComposer);
+  const viewMode = useStore((s) => s.viewMode);
+  const wrapLines = useStore((s) => s.wrapLines);
   const tokens = useDiffTokens(file);
 
   const [drag, setDrag] = useState<Drag>(IDLE);
@@ -103,9 +118,9 @@ export const FilePane = ({ file }: { file: FileData }) => {
   );
 
   return (
-    <div className="overflow-x-auto">
+    <div className={cn("quack-diff-scroll overflow-x-auto", wrapLines && "quack-wrap")}>
       <Diff
-        viewType="split"
+        viewType={viewMode}
         diffType={file.type}
         hunks={file.hunks}
         tokens={tokens}
@@ -202,4 +217,19 @@ const buildWidgets = (
     }
   }
   return widgets;
+};
+
+const NonTextPanel = ({ file }: { file: FileData }) => {
+  const reason = nonTextReason(file);
+  return (
+    <div className="flex items-center gap-3 px-4 py-6 text-sm text-muted-foreground">
+      <FileImage className="size-5 shrink-0 opacity-70" aria-hidden="true" />
+      <div>
+        <div className="font-medium text-foreground">{nonTextLabel(reason)}</div>
+        <div className="mt-0.5 text-xs">
+          Quack shows text diffs. This change has no reviewable text content.
+        </div>
+      </div>
+    </div>
+  );
 };

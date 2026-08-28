@@ -1,11 +1,13 @@
-import { useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronDown, ChevronRight, Folder, FolderOpen, Search, X } from "lucide-react";
 import { parseDiff } from "react-diff-view";
 import { useStore } from "@/lib/store";
 import { filePath } from "@/lib/selection";
 import { fileBadge } from "@/lib/file-badge";
+import { matchesFilter } from "@/lib/diff-utils";
 import { iconForFile } from "@/lib/file-icon";
 import { FileTypeIcon } from "./file-icons";
+import { ReviewProgress } from "./ReviewProgress";
 import { buildFileTree, countLeaves, type TreeDir, type TreeFile, type TreeNode } from "@/lib/file-tree";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -17,6 +19,14 @@ const MIN_W = 180;
 const MAX_W = 520;
 const clampW = (n: number) => Math.min(MAX_W, Math.max(MIN_W, n));
 
+// Change types offered as quick filter chips, with their badge letters.
+const TYPE_CHIPS: { type: string; label: string }[] = [
+  { type: "add", label: "A" },
+  { type: "modify", label: "M" },
+  { type: "delete", label: "D" },
+  { type: "rename", label: "R" },
+];
+
 export const FileTree = () => {
   const diff = useStore((s) => s.diff);
   const [width, setWidth] = useState(() => {
@@ -24,33 +34,111 @@ export const FileTree = () => {
     return Number.isFinite(raw) && raw >= MIN_W && raw <= MAX_W ? raw : 256;
   });
 
-  const files = useMemo(() => (diff ? parseDiff(diff.raw) : []), [diff]);
+  const filterQuery = useStore((s) => s.filterQuery);
+  const filterTypes = useStore((s) => s.filterTypes);
+  const setFilterQuery = useStore((s) => s.setFilterQuery);
+  const toggleFilterType = useStore((s) => s.toggleFilterType);
+  const clearFilter = useStore((s) => s.clearFilter);
+  const focusFilterNonce = useStore((s) => s.focusFilterNonce);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (focusFilterNonce > 0) {
+      searchRef.current?.focus();
+      searchRef.current?.select();
+    }
+  }, [focusFilterNonce]);
+
+  const allFiles = useMemo(() => (diff ? parseDiff(diff.raw) : []), [diff]);
+  const files = useMemo(
+    () => allFiles.filter((f) => matchesFilter(f, filterQuery, filterTypes)),
+    [allFiles, filterQuery, filterTypes],
+  );
   const tree = useMemo(() => buildFileTree(files), [files]);
   const fileViewed = useStore((s) => s.fileViewed);
-  const viewedCount = files.reduce(
+  const viewedCount = allFiles.reduce(
     (n, f) => (fileViewed[filePath(f)] === true ? n + 1 : n),
     0,
   );
+  const availableTypes = useMemo(
+    () => new Set<string>(allFiles.map((f) => f.type)),
+    [allFiles],
+  );
+  const filtering = filterQuery.trim() !== "" || filterTypes.length > 0;
 
   return (
     <aside
       className="relative flex shrink-0 flex-col border-r bg-card"
       style={{ width }}
+      aria-label="Changed files"
     >
-      <div className="flex items-center justify-between border-b px-3 py-2 text-xs font-medium uppercase text-muted-foreground">
-        <span>Files {files.length > 0 && `(${String(files.length)})`}</span>
-        {files.length > 0 && (
-          <span className="text-[0.65rem] normal-case">
-            {viewedCount}/{files.length} viewed
-          </span>
-        )}
+      <div className="border-b px-2 py-2">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <input
+            ref={searchRef}
+            type="text"
+            value={filterQuery}
+            onChange={(e) => {
+              setFilterQuery(e.target.value);
+            }}
+            placeholder="Filter files…"
+            aria-label="Filter files by name"
+            className="h-7 w-full rounded-md border bg-background pl-7 pr-7 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+          {filtering && (
+            <button
+              type="button"
+              onClick={clearFilter}
+              aria-label="Clear filter"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
+        </div>
+        <div className="mt-1.5 flex items-center gap-1">
+          {TYPE_CHIPS.filter((c) => availableTypes.has(c.type)).map((c) => {
+            const active = filterTypes.includes(c.type);
+            const badge = fileBadge(c.type);
+            return (
+              <button
+                key={c.type}
+                type="button"
+                onClick={() => {
+                  toggleFilterType(c.type);
+                }}
+                aria-pressed={active}
+                title={`${badge.title} files`}
+                className={cn(
+                  "inline-flex size-5 items-center justify-center rounded text-[0.65rem] font-bold transition-opacity focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  badge.className,
+                  active ? "ring-1 ring-ring ring-offset-1 ring-offset-card" : "opacity-50 hover:opacity-100",
+                )}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
+      <ReviewProgress total={allFiles.length} viewed={viewedCount} />
       <ScrollArea className="flex-1">
-        <ul className="py-1">
-          {tree.map((node) => (
-            <Node key={node.path} node={node} depth={0} />
-          ))}
-        </ul>
+        {tree.length === 0 ? (
+          // Only call it a filter miss when a filter is actually active;
+          // an empty tree with no filter just means "no diff yet".
+          filtering ? (
+            <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+              No files match.
+            </div>
+          ) : null
+        ) : (
+          <ul className="py-1">
+            {tree.map((node) => (
+              <Node key={node.path} node={node} depth={0} />
+            ))}
+          </ul>
+        )}
       </ScrollArea>
       <div
         role="separator"

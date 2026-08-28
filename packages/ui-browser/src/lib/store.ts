@@ -1,5 +1,12 @@
 import type { ClientMessage, DiffFile } from "@askdiff/protocol";
 import { create } from "zustand";
+import { readLocal, writeLocal } from "@/lib/persist";
+
+export type ViewMode = "split" | "unified";
+
+/** Stable key identifying a comment thread: its file + anchor line. */
+export const threadKey = (file: string, toLine: number): string =>
+  `${file}#${String(toLine)}`;
 
 export type ConnectionState =
   | { state: "idle" }
@@ -20,7 +27,21 @@ export type Ask = {
   status: AskStatus;
   response: string;
   error?: string;
+  // Optional model override sent with the ask (CLI alias: opus/sonnet/haiku).
+  // Undefined means "inherit the review session's model".
+  model?: string;
 };
+
+// A model the composer can send an ask on. `value: undefined` means no
+// override — the server resumes the session on its own model. Aliases map
+// to whatever the `claude` CLI resolves them to, so they stay current.
+export type AskModelOption = { value: string | undefined; label: string; hint: string };
+export const ASK_MODEL_OPTIONS: AskModelOption[] = [
+  { value: undefined, label: "Session default", hint: "Inherit the review session's model" },
+  { value: "opus", label: "Opus", hint: "Most capable" },
+  { value: "sonnet", label: "Sonnet", hint: "Balanced speed & quality" },
+  { value: "haiku", label: "Haiku", hint: "Fastest, lightest on tokens" },
+];
 
 export type AskInput = {
   file: string;
@@ -30,7 +51,8 @@ export type AskInput = {
   question: string;
 };
 
-export type Toast = { id: string; message: string };
+export type ToastLevel = "error" | "info";
+export type Toast = { id: string; message: string; level: ToastLevel };
 
 type Store = {
   // connection
@@ -59,6 +81,28 @@ type Store = {
   // per-file UI state (path → flag)
   fileViewed: Record<string, boolean>;
   fileCollapsed: Record<string, boolean>;
+
+  // diff-view preferences (persisted)
+  viewMode: ViewMode;
+  wrapLines: boolean;
+
+  // Model new asks are sent on (persisted). Undefined = session default.
+  askModel: string | undefined;
+
+  // comment threads the reviewer has resolved (threadKey → true). Persisted
+  // so resolution survives reconnects/re-renders of the same diff.
+  resolvedThreads: Record<string, boolean>;
+
+  // file-tree / diff filtering
+  filterQuery: string;
+  // Change-type filters (react-diff-view file.type: add|delete|modify|rename|copy).
+  // Empty set means "all types".
+  filterTypes: string[];
+
+  // keyboard-driven UI coordination
+  helpOpen: boolean;
+  // bumped by the "/" shortcut so the FileTree focuses its filter input
+  focusFilterNonce: number;
 
   // file-tree sidebar: dir path → collapsed? (default expanded)
   treeCollapsed: Record<string, boolean>;
@@ -100,11 +144,22 @@ type Store = {
   ) => void;
   toggleViewed: (path: string) => void;
   toggleCollapsed: (path: string) => void;
+  setCollapsed: (path: string, collapsed: boolean) => void;
   toggleTreeNode: (path: string) => void;
   requestScrollTo: (path: string) => void;
+  setViewMode: (mode: ViewMode) => void;
+  toggleViewMode: () => void;
+  toggleWrap: () => void;
+  setAskModel: (model: string | undefined) => void;
+  toggleResolved: (key: string) => void;
+  setFilterQuery: (q: string) => void;
+  toggleFilterType: (type: string) => void;
+  clearFilter: () => void;
+  setHelpOpen: (open: boolean) => void;
+  requestFocusFilter: () => void;
   appendChunk: (askId: string, delta: string) => void;
   finishAsk: (askId: string, outcome: "done" | "error", message?: string) => void;
-  pushToast: (message: string) => void;
+  pushToast: (message: string, level?: ToastLevel) => void;
   dismissToast: (id: string) => void;
 
   // user actions
@@ -117,6 +172,7 @@ type Store = {
   closeComposer: (file: string, fromLine: number) => void;
   startAsk: (input: AskInput) => string;
   cancel: (askId: string) => void;
+  retryAsk: (askId: string) => void;
   startThemeGen: (primary: string, secondary: string) => string;
   themeGenerated: (id: string, palette: Record<string, string>) => void;
   themeError: (id: string, message: string) => void;
@@ -138,6 +194,37 @@ const newId = () =>
     ? globalThis.crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
+const VIEW_MODE_KEY = "askdiff:view-mode";
+const WRAP_KEY = "askdiff:wrap-lines";
+const RESOLVED_KEY = "askdiff:resolved-threads";
+const ASK_MODEL_KEY = "askdiff:ask-model";
+
+const initialAskModel = (): string | undefined => {
+  const raw = readLocal(ASK_MODEL_KEY);
+  // Only honor a value we actually offer; anything else falls back to the
+  // session default so a stale/removed alias can't stick.
+  return ASK_MODEL_OPTIONS.some((o) => o.value === raw) && raw ? raw : undefined;
+};
+
+const initialViewMode = (): ViewMode =>
+  readLocal(VIEW_MODE_KEY) === "unified" ? "unified" : "split";
+
+const initialWrap = (): boolean => readLocal(WRAP_KEY) === "1";
+
+const initialResolved = (): Record<string, boolean> => {
+  const raw = readLocal(RESOLVED_KEY);
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      return parsed as Record<string, boolean>;
+    }
+  } catch {
+    // ignore malformed persisted state
+  }
+  return {};
+};
+
 const toAskMessage = (ask: Ask): ClientMessage => ({
   type: "ask",
   id: ask.id,
@@ -146,6 +233,7 @@ const toAskMessage = (ask: Ask): ClientMessage => ({
   to_line: ask.toLine,
   chunk: ask.chunk,
   question: ask.question,
+  ...(ask.model ? { model: ask.model } : {}),
 });
 
 export const useStore = create<Store>((set, get) => ({
@@ -157,6 +245,14 @@ export const useStore = create<Store>((set, get) => ({
   fileViewed: {},
   fileCollapsed: {},
   treeCollapsed: {},
+  viewMode: initialViewMode(),
+  wrapLines: initialWrap(),
+  askModel: initialAskModel(),
+  resolvedThreads: initialResolved(),
+  filterQuery: "",
+  filterTypes: [],
+  helpOpen: false,
+  focusFilterNonce: 0,
   toasts: [],
   _send: () => {
     get().pushToast("Not connected to askdiff server");
@@ -214,6 +310,50 @@ export const useStore = create<Store>((set, get) => ({
       },
     })),
 
+  setCollapsed: (path, collapsed) =>
+    set((s) => ({
+      fileCollapsed: { ...s.fileCollapsed, [path]: collapsed },
+    })),
+
+  setViewMode: (mode) => {
+    writeLocal(VIEW_MODE_KEY, mode);
+    set({ viewMode: mode });
+  },
+  toggleViewMode: () =>
+    set((s) => {
+      const next: ViewMode = s.viewMode === "split" ? "unified" : "split";
+      writeLocal(VIEW_MODE_KEY, next);
+      return { viewMode: next };
+    }),
+  toggleWrap: () =>
+    set((s) => {
+      const next = !s.wrapLines;
+      writeLocal(WRAP_KEY, next ? "1" : "0");
+      return { wrapLines: next };
+    }),
+  setAskModel: (model) => {
+    writeLocal(ASK_MODEL_KEY, model ?? "");
+    set({ askModel: model });
+  },
+  toggleResolved: (key) =>
+    set((s) => {
+      const next = { ...s.resolvedThreads, [key]: !(s.resolvedThreads[key] ?? false) };
+      if (!next[key]) delete next[key];
+      writeLocal(RESOLVED_KEY, JSON.stringify(next));
+      return { resolvedThreads: next };
+    }),
+  setFilterQuery: (q) => set({ filterQuery: q }),
+  toggleFilterType: (type) =>
+    set((s) => ({
+      filterTypes: s.filterTypes.includes(type)
+        ? s.filterTypes.filter((t) => t !== type)
+        : [...s.filterTypes, type],
+    })),
+  clearFilter: () => set({ filterQuery: "", filterTypes: [] }),
+  setHelpOpen: (open) => set({ helpOpen: open }),
+  requestFocusFilter: () =>
+    set((s) => ({ focusFilterNonce: s.focusFilterNonce + 1 })),
+
   toggleTreeNode: (path) =>
     set((s) => ({
       treeCollapsed: {
@@ -254,8 +394,8 @@ export const useStore = create<Store>((set, get) => ({
       };
     }),
 
-  pushToast: (message) =>
-    set((s) => ({ toasts: [...s.toasts, { id: newId(), message }] })),
+  pushToast: (message, level = "error") =>
+    set((s) => ({ toasts: [...s.toasts, { id: newId(), message, level }] })),
   dismissToast: (id) =>
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
@@ -277,6 +417,7 @@ export const useStore = create<Store>((set, get) => ({
 
   startAsk: (input) => {
     const id = newId();
+    const model = get().askModel;
     const ask: Ask = {
       id,
       file: input.file,
@@ -286,6 +427,7 @@ export const useStore = create<Store>((set, get) => ({
       question: input.question,
       status: "streaming",
       response: "",
+      ...(model ? { model } : {}),
     };
     set((s) => ({
       asks: { ...s.asks, [id]: ask },
@@ -302,6 +444,18 @@ export const useStore = create<Store>((set, get) => ({
     set((s) => ({
       asks: { ...s.asks, [askId]: { ...ask, status: "cancelled" } },
     }));
+  },
+
+  // Re-run an ask that errored or was cancelled: clear its response and
+  // resend the original question under the same id (so it reuses the same
+  // thread bubble rather than duplicating the question).
+  retryAsk: (askId) => {
+    const ask = get().asks[askId];
+    if (!ask || ask.status === "streaming") return;
+    const reset: Ask = { ...ask, status: "streaming", response: "" };
+    delete reset.error;
+    set((s) => ({ asks: { ...s.asks, [askId]: reset } }));
+    get()._send(toAskMessage(reset));
   },
 
   startThemeGen: (primary, secondary) => {

@@ -73,14 +73,27 @@
   * {
     border-color: var(--border);
   }
+  /* Tailwind v4's preflight resets interactive elements to the default
+     cursor. Restore the pointer for enabled buttons, links and role=button
+     so every control (top-bar icons included) matches the duck logo. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  summary,
+  a[href] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
   html, body, #root {
     height: 100%;
   }
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, "Liberation Mono", "Courier New", monospace;
     -webkit-font-smoothing: antialiased;
   }
 }
@@ -99,27 +112,74 @@
 .diff-gutter:hover {
   background-color: var(--accent);
 }
-/* Faint + affordance in the gutter; clicking the row opens the composer. */
+/* Comment affordance in the gutter: a quiet dot at rest, a clear clickable
+   "+" chip on row hover. Clicking anywhere on the gutter opens the composer.
+   Discoverable without cluttering every row. */
 .quack-add-comment {
-  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   font-weight: 700;
-  opacity: 0.25;
+  line-height: 1;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.1s ease;
 }
-.diff-gutter:hover .quack-add-comment {
+/* Reveal on gutter hover, and keep it visible on the row being selected so
+   drag-selecting a range still shows where the comment will land. */
+.diff-gutter:hover .quack-add-comment,
+.diff-gutter-selected .quack-add-comment {
   opacity: 1;
-  color: var(--primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .quack-add-comment {
+    transition: none;
+  }
 }
 /* In split mode each <tr.diff-line> contains the old AND new cells; only
    the cells whose change is in `selectedChanges` get the -selected class.
    :has() propagates the highlight to the paired cells on the other side
-   so the whole row lights up, GitHub-PR-style. */
+   so the whole row lights up, GitHub-PR-style. Colors are mixed from the
+   theme's --ring so the selection is unmistakable in every theme (light,
+   dark, Dracula, custom…) without per-theme overrides. */
 .diff-gutter-selected,
 .diff-line:has(.diff-gutter-selected) > .diff-gutter {
-  background-color: oklch(0.92 0.04 240);
+  background-color: color-mix(in oklch, var(--ring) 45%, transparent);
+  /* A solid primary bar down the selected range — high-contrast in every
+     theme, including near-neutral light palettes where a ring-tint alone
+     is too faint. */
+  box-shadow: inset 2px 0 0 var(--primary);
 }
 .diff-code-selected,
 .diff-line:has(.diff-code-selected) > .diff-code {
-  background-color: oklch(0.96 0.04 240);
+  background-color: color-mix(in oklch, var(--ring) 22%, transparent);
+}
+
+/* Line wrapping. react-diff-view ships `white-space: pre-wrap` on a
+   `table-layout: fixed` table. A diff reads best with no-wrap + horizontal
+   scroll by default (long lines on one line, columns aligned), but forcing
+   `white-space: pre` on the *fixed* table makes long lines overflow their
+   50%-width cell and overlap the opposite column in split view. So for the
+   no-wrap default we also switch the table to auto layout and let it grow;
+   the `.overflow-x-auto` wrapper then scrolls. The `.quack-wrap` toggle
+   restores wrapping inside the fixed 100% table. */
+.quack-diff-scroll .diff-code {
+  white-space: pre;
+}
+.quack-diff-scroll:not(.quack-wrap) .diff {
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+}
+.quack-diff-scroll.quack-wrap .diff-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Prism token colors, driven by --syntax-* so each theme ships its own
@@ -403,6 +463,200 @@
   overflow: visible;
 }
 
+/* Standalone mascot (empty/loading states): keep pixels crisp; size comes
+   from the utility class on the element. */
+.quack-duck {
+  image-rendering: pixelated;
+}
+
+/* Loading scene: a full duck flaps across a segmented progress track. The
+   Duck Hunt theme turns the loop into a tiny hit-and-retrieve easter egg. */
+.quack-spinner {
+  position: relative;
+  flex: none;
+  display: grid;
+  gap: 0.75rem;
+  image-rendering: pixelated;
+}
+
+.quack-loader__stage {
+  position: relative;
+  height: 10rem;
+  overflow: hidden;
+}
+
+.quack-loader__flyer {
+  position: absolute;
+  top: 1rem;
+  left: calc(50% - 3rem);
+  width: 6rem;
+  height: 5.25rem;
+  transform-origin: center;
+  animation: quack-loader-hover 800ms steps(2, end) infinite;
+}
+
+.quack-loader__flyer-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  animation: quack-loader-wings-up 320ms steps(1, end) infinite;
+}
+
+.quack-loader__flyer-frame--down {
+  animation-name: quack-loader-wings-down;
+}
+
+.quack-loader__track {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+  height: 1.5rem;
+  border: 3px solid var(--foreground);
+  padding: 3px;
+  background: var(--background);
+}
+
+.quack-loader__track span {
+  background: var(--duck-head);
+  opacity: 0.12;
+  animation: quack-loader-fill 1600ms steps(1, end) infinite;
+}
+
+.quack-loader__track span:nth-child(1) { animation-delay: 0ms; }
+.quack-loader__track span:nth-child(2) { animation-delay: 120ms; }
+.quack-loader__track span:nth-child(3) { animation-delay: 240ms; }
+.quack-loader__track span:nth-child(4) { animation-delay: 360ms; }
+.quack-loader__track span:nth-child(5) { animation-delay: 480ms; }
+.quack-loader__track span:nth-child(6) { animation-delay: 600ms; }
+.quack-loader__track span:nth-child(7) { animation-delay: 720ms; }
+.quack-loader__track span:nth-child(8) { animation-delay: 840ms; }
+.quack-loader__track span:nth-child(9) { animation-delay: 960ms; }
+.quack-loader__track span:nth-child(10) { animation-delay: 1080ms; }
+
+.quack-loader__hit,
+.quack-loader__retriever {
+  display: none;
+}
+
+@keyframes quack-loader-hover {
+  0%, 100% { top: 0.8rem; transform: translateY(0); }
+  50% { top: 0.8rem; transform: translateY(0.4rem); }
+}
+
+@keyframes quack-loader-wings-up {
+  0%, 49.99% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes quack-loader-wings-down {
+  0%, 49.99% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes quack-loader-fill {
+  0%, 8% { opacity: 0.12; background: var(--duck-head); }
+  9%, 72% { opacity: 1; background: var(--duck-head); }
+  73%, 100% { opacity: 0.12; background: var(--duck-bill); }
+}
+
+/* Duck Hunt: the shot is represented by an abstract pixel burst; the
+   original retriever sprite then rises with the recovered duck. */
+[data-theme="duckhunt"] .quack-loader__flyer {
+  animation: duckhunt-loader-duck 4200ms steps(14, end) infinite;
+}
+
+[data-theme="duckhunt"] .quack-loader__hit {
+  position: absolute;
+  top: 1.8rem;
+  left: 50%;
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0;
+  transform: translateX(-50%);
+  animation: duckhunt-loader-hit 4200ms steps(1, end) infinite;
+}
+
+.quack-loader__hit i {
+  position: absolute;
+  width: 0.35rem;
+  height: 0.35rem;
+  background: var(--destructive);
+}
+
+.quack-loader__hit i:nth-child(1) { top: 0; left: 45%; }
+.quack-loader__hit i:nth-child(2) { top: 45%; right: 0; background: var(--duck-bill); }
+.quack-loader__hit i:nth-child(3) { bottom: 0; left: 45%; }
+.quack-loader__hit i:nth-child(4) { top: 45%; left: 0; background: var(--duck-bill); }
+.quack-loader__hit i:nth-child(5) { top: 42%; left: 42%; background: var(--foreground); }
+
+[data-theme="duckhunt"] .quack-loader__retriever {
+  position: absolute;
+  bottom: -2rem;
+  left: 50%;
+  display: block;
+  width: 14rem;
+  height: auto;
+  image-rendering: pixelated;
+  object-fit: contain;
+  opacity: 0;
+  transform: translate(-50%, 100%);
+  animation: duckhunt-loader-dog 4200ms steps(6, end) infinite;
+}
+
+[data-theme="duckhunt"] .quack-loader__track span {
+  animation-duration: 2100ms;
+}
+
+@keyframes duckhunt-loader-duck {
+  0%, 20% { left: calc(50% - 3rem); top: 0.8rem; transform: translateY(0) rotate(0); opacity: 1; }
+  30%, 37% { left: calc(50% - 3rem); top: 1.2rem; transform: translateY(0) rotate(0); opacity: 1; }
+  45% { left: calc(50% - 3rem); top: 1.4rem; transform: rotate(90deg); opacity: 1; }
+  65% { left: calc(50% - 3rem); top: 11rem; transform: rotate(90deg); opacity: 1; }
+  66%, 100% { left: calc(50% - 3rem); top: 11rem; transform: rotate(90deg); opacity: 0; }
+}
+
+@keyframes duckhunt-loader-hit {
+  0%, 37%, 44%, 100% { opacity: 0; transform: translateX(-50%) scale(0.5); }
+  38%, 43% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+@keyframes duckhunt-loader-dog {
+  0%, 70% { opacity: 0; transform: translate(-50%, 100%); }
+  80%, 90% { opacity: 1; transform: translate(-50%, 0); }
+  96%, 100% { opacity: 0; transform: translate(-50%, 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quack-loader__flyer,
+  .quack-loader__flyer-frame,
+  .quack-loader__track span,
+  [data-theme="duckhunt"] .quack-loader__flyer,
+  [data-theme="duckhunt"] .quack-loader__hit,
+  [data-theme="duckhunt"] .quack-loader__retriever {
+    animation: none;
+  }
+
+  .quack-loader__flyer-frame--down {
+    display: none;
+  }
+
+  .quack-loader__flyer,
+  [data-theme="duckhunt"] .quack-loader__flyer {
+    top: 1rem;
+    left: calc(50% - 3rem);
+    opacity: 1;
+    transform: none;
+  }
+
+  .quack-loader__track span:nth-child(-n+5) {
+    opacity: 1;
+  }
+}
+
 .quack-logo__ink,
 .quack-logo__eye {
   fill: var(--duck-ink);
@@ -500,15 +754,6 @@
 @keyframes quack-fade {
   0%, 100% { opacity: 0; }
   10%, 80% { opacity: 1; }
-}
-
-.dark .diff-gutter-selected,
-.dark .diff-line:has(.diff-gutter-selected) > .diff-gutter {
-  background-color: oklch(0.32 0.05 240);
-}
-.dark .diff-code-selected,
-.dark .diff-line:has(.diff-code-selected) > .diff-code {
-  background-color: oklch(0.28 0.05 240);
 }
 
 .dark .diff-code-insert {

@@ -1,4 +1,5 @@
 import { useWebSocket } from "./hooks/use-websocket";
+import { useKeyboardShortcuts } from "./hooks/use-keyboard-shortcuts";
 import { TopBar } from "./components/TopBar";
 import { StaleBanner } from "./components/StaleBanner";
 import { FileTree } from "./components/FileTree";
@@ -7,6 +8,7 @@ import { Toaster } from "./components/Toaster";
 
 export const App = () => {
   useWebSocket();
+  useKeyboardShortcuts();
 
   return (
     <div className="flex h-full flex-col">
