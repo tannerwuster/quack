@@ -38,6 +38,10 @@
   --syntax-function: #6f42c1;
   --syntax-variable: #e36209;
   --syntax-deleted: #b31d28;
+  --duck-head: #32a852;
+  --duck-head-shadow: #217a3b;
+  --duck-bill: #f59f00;
+  --duck-ink: #111827;
 }
 
 @theme inline {
@@ -215,6 +219,10 @@
   --syntax-function: #d2a8ff;
   --syntax-variable: #ffa657;
   --syntax-deleted: #ffa198;
+  --duck-head: #4cc968;
+  --duck-head-shadow: #278943;
+  --duck-bill: #ffb347;
+  --duck-ink: #05070d;
 }
 
 /* Dracula — canonical palette + Dracula Neon syntax. Carries the .dark
@@ -248,6 +256,10 @@
   --syntax-function: #50fa7b;
   --syntax-variable: #ffb86c;
   --syntax-deleted: #ff5555;
+  --duck-head: #50fa7b;
+  --duck-head-shadow: #2dbb5d;
+  --duck-bill: #ffb86c;
+  --duck-ink: #191a21;
 }
 
 /* CosmicGirl's Dracula (Neon): Dracula syntax + deep teal-navy chrome. */
@@ -280,6 +292,214 @@
   --syntax-function: #50fa7b;
   --syntax-variable: #ffb86c;
   --syntax-deleted: #ff5555;
+  --duck-head: #bd93f9;
+  --duck-head-shadow: #8060b5;
+  --duck-bill: #ffb86c;
+  --duck-ink: #080d12;
+}
+
+/* Quack — the Duck Color Palette (earthy tan / olive / brown). */
+[data-theme="quack"] {
+  --background: #241609;
+  --foreground: #ecdcbf;
+  --card: #32220f;
+  --card-foreground: #ecdcbf;
+  --popover: #32220f;
+  --popover-foreground: #ecdcbf;
+  --primary: #c7a46e;
+  --primary-foreground: #241609;
+  --secondary: #4c5e40;
+  --secondary-foreground: #ecdcbf;
+  --muted: #3a2b1a;
+  --muted-foreground: #b19a78;
+  --accent: #668b61;
+  --accent-foreground: #f2f0e6;
+  --destructive: #b5462d;
+  --destructive-foreground: #ecdcbf;
+  --border: #51382d;
+  --input: #51382d;
+  --ring: #c7a46e;
+  --syntax-comment: #8a7a5c;
+  --syntax-punctuation: #ecdcbf;
+  --syntax-property: #a7c396;
+  --syntax-number: #d8b98a;
+  --syntax-string: #8fae7f;
+  --syntax-keyword: #d1a86a;
+  --syntax-function: #b9d0a0;
+  --syntax-variable: #cf9b5e;
+  --syntax-deleted: #cf6a4a;
+  --duck-head: #668b61;
+  --duck-head-shadow: #4c5e40;
+  --duck-bill: #c7a46e;
+  --duck-ink: #241609;
+}
+
+/* Duck Hunt — the NES palette (sky blue / grass green / coral / deep blue). */
+[data-theme="duckhunt"] {
+  --background: #0a0a1f;
+  --foreground: #eef3fb;
+  --card: #141446;
+  --card-foreground: #eef3fb;
+  --popover: #141446;
+  --popover-foreground: #eef3fb;
+  --primary: #32b5fc;
+  --primary-foreground: #0a0a1f;
+  --secondary: #00009f;
+  --secondary-foreground: #eef3fb;
+  --muted: #1c1c52;
+  --muted-foreground: #9aa8d8;
+  --accent: #75cb0b;
+  --accent-foreground: #0a0a1f;
+  --destructive: #fc6955;
+  --destructive-foreground: #0a0a1f;
+  --border: #23236a;
+  --input: #23236a;
+  --ring: #32b5fc;
+  --syntax-comment: #6a72a8;
+  --syntax-punctuation: #eef3fb;
+  --syntax-property: #4fc3ff;
+  --syntax-number: #ffd166;
+  --syntax-string: #75cb0b;
+  --syntax-keyword: #fc6955;
+  --syntax-function: #32b5fc;
+  --syntax-variable: #ffb04f;
+  --syntax-deleted: #fc6955;
+  --duck-head: #fc6955;
+  --duck-head-shadow: #d1503f;
+  --duck-bill: #ffd166;
+  --duck-ink: #0a0a1f;
+}
+
+[data-theme="custom"] {
+  --duck-head: var(--primary);
+  --duck-head-shadow: color-mix(in oklch, var(--primary), black 30%);
+  --duck-bill: var(--syntax-variable);
+  --duck-ink: var(--background);
+}
+
+/* Tiny theme-aware mascot. All geometry stays on a four-unit grid so the
+   duck remains pixel-crisp at its rendered 32px size. */
+.quack-logo-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.quack-logo {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  image-rendering: pixelated;
+}
+
+.quack-logo svg {
+  width: 2rem;
+  height: 2rem;
+  overflow: visible;
+}
+
+.quack-logo__ink,
+.quack-logo__eye {
+  fill: var(--duck-ink);
+}
+
+.quack-logo__head {
+  fill: var(--duck-head);
+}
+
+.quack-logo__head-shadow {
+  fill: var(--duck-head-shadow);
+}
+
+.quack-logo__bill {
+  fill: var(--duck-bill);
+}
+
+.quack-logo:hover svg {
+  transform: translateY(-1px);
+}
+
+.quack-logo:active svg {
+  transform: translateY(1px) rotate(3deg);
+}
+
+.quack-logo:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.quack-bubble {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.55rem);
+  left: 0;
+  width: max-content;
+  border: 3px solid var(--foreground);
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.25rem 0.45rem 0.2rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px) scale(0.85);
+  transform-origin: top left;
+}
+
+.quack-bubble::before,
+.quack-bubble::after {
+  position: absolute;
+  bottom: 100%;
+  left: 0.55rem;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  content: "";
+}
+
+.quack-bubble::before {
+  border-width: 0 7px 8px;
+  border-color: transparent transparent var(--foreground);
+}
+
+.quack-bubble::after {
+  left: calc(0.55rem + 3px);
+  border-width: 0 4px 5px;
+  border-color: transparent transparent var(--background);
+}
+
+.quack-bubble--visible {
+  animation: quack-pop 850ms steps(3, end) both;
+}
+
+@keyframes quack-pop {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.85); }
+  12%, 72% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(2px) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quack-logo svg,
+  .quack-bubble {
+    transition: none;
+  }
+
+  .quack-bubble--visible {
+    animation: quack-fade 850ms linear both;
+  }
+}
+
+@keyframes quack-fade {
+  0%, 100% { opacity: 0; }
+  10%, 80% { opacity: 1; }
 }
 
 .dark .diff-gutter-selected,
@@ -303,4 +523,3 @@
 .dark .diff-gutter-delete {
   background-color: oklch(0.34 0.09 25);
 }
-

@@ -3,6 +3,7 @@ import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { ThemePicker } from "./ThemePicker";
 import { ThemeEditor } from "./ThemeEditor";
+import { QuackLogo } from "./QuackLogo";
 
 const ConnectionDot = () => {
   const conn = useStore((s) => s.conn);
@@ -40,12 +41,7 @@ export const TopBar = () => {
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b bg-card px-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold">quack</span>
-        {protocol && (
-          <Badge variant="outline" className="font-mono text-[0.65rem]">
-            {protocol}
-          </Badge>
-        )}
+        <QuackLogo />
         {label && (
           <Badge variant="muted" className="font-mono text-[0.65rem]">
             {label}

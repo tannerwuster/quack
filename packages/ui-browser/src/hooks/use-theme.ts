@@ -2,9 +2,22 @@ import { useState } from "react";
 import { writeLocal } from "@/lib/persist";
 import { clearCustomStyle } from "@/lib/palette";
 
-export type ThemeName = "light" | "dark" | "dracula" | "cosmicgirl";
+export type ThemeName =
+  | "light"
+  | "dark"
+  | "quack"
+  | "duckhunt"
+  | "dracula"
+  | "cosmicgirl";
 
-export const THEMES: ThemeName[] = ["light", "dark", "dracula", "cosmicgirl"];
+export const THEMES: ThemeName[] = [
+  "light",
+  "dark",
+  "quack",
+  "duckhunt",
+  "dracula",
+  "cosmicgirl",
+];
 
 const STORAGE_KEY = "askdiff:theme";
 

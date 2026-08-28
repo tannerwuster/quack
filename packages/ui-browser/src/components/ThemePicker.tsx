@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 const LABELS: Record<ThemeName, string> = {
   light: "Light",
   dark: "Dark",
+  quack: "Quack",
+  duckhunt: "Duck Hunt",
   dracula: "Dracula",
   cosmicgirl: "Cosmic Girl",
 };
@@ -25,8 +27,6 @@ export const ThemePicker = ({ rev = 0 }: { rev?: number }) => {
   void rev;
   const customs = loadCustomThemes();
   const current = document.documentElement.getAttribute("data-theme") ?? theme;
-  const label =
-    current === "custom" ? "Custom" : (LABELS[current as ThemeName] ?? current);
 
   return (
     <Popover>
@@ -34,11 +34,10 @@ export const ThemePicker = ({ rev = 0 }: { rev?: number }) => {
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 gap-1.5 px-2"
+          className="h-7 w-7 px-0"
           aria-label="Theme"
         >
           <Palette className="size-4" />
-          <span className="text-xs">{label}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-44 p-1">
