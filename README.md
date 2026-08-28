@@ -72,13 +72,9 @@ about, even if you're currently in a different session.
 uncommitted changes included. Best used in the same session that made
 the changes, so it holds the full context of the edits.
 
-<!-- TODO(recording): re-record against the current Quack UI, save as
-     assets/working-tree-demo.gif, then uncomment the line below.
-
 ![Quack — reviewing the working tree](https://raw.githubusercontent.com/tannerwuster/quack/main/assets/working-tree-demo.gif)
--->
 
-> **Demo recording coming soon.** _Reviewing uncommitted working-tree changes._
+> _Reviewing uncommitted working-tree changes, then asking about them inline — the answer streams back from the session that wrote the code._
 
 ## How it works
 
