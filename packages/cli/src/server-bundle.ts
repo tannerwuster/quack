@@ -17,8 +17,12 @@ const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "no-referrer",
+  // `img-src` must include `data:` — the file-type icons are inlined by
+  // Vite as `data:image/svg+xml` data URIs, so without it every icon is
+  // blocked (renders as a broken image). Without an explicit `img-src`
+  // they fall back to `default-src 'self'`, which forbids data URIs.
   "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src ws://localhost:* wss://localhost:*",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src ws://localhost:* wss://localhost:*",
 };
 
 const MIME: Record<string, string> = {

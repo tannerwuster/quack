@@ -117,8 +117,32 @@ const TextDiff = ({ file }: { file: FileData }) => {
     [file, asksByLine, openByLine],
   );
 
+  // Comment widgets are injected as full-width rows inside react-diff-view's
+  // table, which is `width: max-content` (as wide as the widest code line).
+  // Left alone, a widget stretches to that width and Claude's answer runs off
+  // the right edge. We pin the widget to the visible pane (sticky, left:0) and
+  // cap its width to the scroll container's client width, published here as a
+  // CSS variable so the pure-CSS rule in globals.css can read it.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const sync = () => {
+      el.style.setProperty("--quack-pane-w", `${String(el.clientWidth)}px`);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+    };
+  }, []);
+
   return (
-    <div className={cn("quack-diff-scroll overflow-x-auto", wrapLines && "quack-wrap")}>
+    <div
+      ref={scrollRef}
+      className={cn("quack-diff-scroll overflow-x-auto", wrapLines && "quack-wrap")}
+    >
       <Diff
         viewType={viewMode}
         diffType={file.type}

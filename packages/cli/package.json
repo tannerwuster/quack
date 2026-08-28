@@ -1,10 +1,15 @@
 {
   "name": "quackdiff",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Review your AI's diff in the browser and ask about it in the same Claude Code session that wrote it.",
   "type": "module",
-  "bin": { "quack": "./dist/index.js" },
-  "files": ["dist", "README.md"],
+  "bin": {
+    "quack": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "license": "MIT",
   "author": "Tanner A. Wuster",
   "repository": {
@@ -12,7 +17,9 @@
     "url": "git+https://github.com/tannerwuster/quack.git"
   },
   "homepage": "https://github.com/tannerwuster/quack",
-  "bugs": { "url": "https://github.com/tannerwuster/quack/issues" },
+  "bugs": {
+    "url": "https://github.com/tannerwuster/quack/issues"
+  },
   "keywords": [
     "claude-code",
     "claude",
@@ -26,7 +33,9 @@
     "quack",
     "code-quality"
   ],
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "commander": "^14.0.0",
     "open": "^11.0.0",

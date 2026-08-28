@@ -182,6 +182,24 @@
   word-break: break-word;
 }
 
+/* Comment widgets are injected as full-width rows in the diff table. Because
+   the no-wrap table is `width: max-content`, that row is as wide as the widest
+   code line, so the widget (and Claude's answer) would run off the right edge
+   and force a horizontal scroll to read it. Pin the widget's content to the
+   left of the visible pane and cap its width to the scroll container's client
+   width (published as `--quack-pane-w` by FilePane), so the thread always fits
+   the viewport and text wraps to the next line instead of overflowing. */
+.quack-diff-scroll .diff-widget-content {
+  padding: 0;
+}
+.quack-diff-scroll .diff-widget-content > * {
+  position: sticky;
+  left: 0;
+  width: var(--quack-pane-w, 100%);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* Prism token colors, driven by --syntax-* so each theme ships its own
    palette. Class names are the stable ones refractor emits. */
 .token.comment,
