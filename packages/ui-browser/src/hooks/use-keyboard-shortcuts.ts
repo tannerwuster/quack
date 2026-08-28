@@ -154,15 +154,15 @@ export const useKeyboardShortcuts = () => {
           // Shift+/ is "?" on most layouts, but some environments report
           // the key as "/" with shiftKey set — treat that as help too.
           e.preventDefault();
-          if (e.shiftKey) s.setHelpOpen(!s.helpOpen);
+          if (e.shiftKey) s.setSettingsOpen(!s.settingsOpen);
           else focusFilter(s);
           break;
         case "?":
           e.preventDefault();
-          s.setHelpOpen(!s.helpOpen);
+          s.setSettingsOpen(!s.settingsOpen);
           break;
         case "Escape":
-          if (s.helpOpen) s.setHelpOpen(false);
+          if (s.settingsOpen) s.setSettingsOpen(false);
           break;
       }
     };

@@ -140,20 +140,27 @@ Press `?` in the viewer for the full list:
 | `u` | Toggle split / unified |
 | `w` | Toggle line wrap |
 | `/` | Filter files |
-| `?` | Toggle the shortcut help |
+| `?` | Toggle the settings menu |
 
 ### Reading controls
 
 Split and unified diff modes, line wrapping, and an IDE-style file tree —
 resizable, collapsible with `⌘B` (`Ctrl+B` on Windows/Linux) or the panel
-button in the top bar, with file-type icons and a filter box. Plus per-file
-"viewed" checkmarks and a review-progress indicator in the top bar. Every one
-of these persists across runs.
+button in the status bar, with file-type icons and a filter box. Plus
+per-file "viewed" checkmarks and a review-progress indicator. Every one of
+these persists across runs.
+
+The layout follows an editor: the top bar carries what you're reviewing and
+how it's laid out, and a status bar along the bottom carries everything
+about the session — the file-tree toggle, the attached session id, a
+settings menu (theme, shortcut reference and the running version) and the
+connection state. Press `?` to open the settings menu.
 
 ### Themes
 
 Six built-ins — `light`, `dark`, `quack`, `duckhunt`, `dracula`, and
-`cosmicgirl` — plus a custom theme editor. Give it two colors and it
+`cosmicgirl` — pick one from the settings menu in the status bar, which
+ticks the one in effect. Plus a custom theme editor. Give it two colors and it
 derives a full palette, or paste raw tokens (`{"background":"#0e1419"}`
 or `--background: #0e1419;`). You can also describe the theme you want
 and have Claude generate it. Custom themes are saved locally and

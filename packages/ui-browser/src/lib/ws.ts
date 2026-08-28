@@ -39,6 +39,7 @@ const dispatch = (msg: ServerMessage) => {
   switch (msg.type) {
     case "hello":
       s.setProtocol(msg.protocol);
+      if (msg.version !== undefined) s.setServerVersion(msg.version);
       s.setProject(msg.project);
       return;
     case "session":

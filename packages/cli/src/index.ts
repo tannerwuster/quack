@@ -1,5 +1,6 @@
 import { type Server as HttpServer } from "node:http";
 import { createServer as createNetServer } from "node:net";
+import { readFileSync } from "node:fs";
 import { copyFile, mkdir, readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -22,6 +23,20 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_NAME = "quack";
 const DEFAULT_PORT = 7837;
 
+// Our own release, read from the package manifest one level up — which is
+// where it sits both in the published tarball (dist/index.js) and in the
+// repo (src/index.ts). Reported by `--version` and handed to the server so
+// the UI can show which quack is serving it.
+function ownVersion(): string {
+  try {
+    const raw = readFileSync(join(__dirname, "..", "package.json"), "utf8");
+    const pkg = JSON.parse(raw) as { version?: string };
+    return pkg.version ?? "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 interface RunOptions {
   port?: number;
   host: string;
@@ -34,6 +49,7 @@ async function main(): Promise<void> {
   const program = new Command();
   program
     .name(PROJECT_NAME)
+    .version(ownVersion(), "-V, --version", "print the quack version")
     .description(
       "Review your AI's diff in the browser and ask about it in the same Claude Code session that wrote it.",
     )
@@ -146,6 +162,7 @@ async function runServer(opts: RunOptions): Promise<void> {
     diffFile: resolved.diffFile,
     ...(resolved.diffLabel !== undefined ? { diffLabel: resolved.diffLabel } : {}),
     volatile: resolved.volatile,
+    version: ownVersion(),
     httpServer,
     onListening: (resolvedPort) => {
       const url = `http://localhost:${String(resolvedPort)}/`;

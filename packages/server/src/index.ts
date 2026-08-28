@@ -55,6 +55,10 @@ export interface StartServerOptions {
   httpServer?: HttpServer;
   idleShutdownMs?: number;
   onListening?: (port: number) => void;
+  // Release of the `quackdiff` package running this server, forwarded to
+  // the UI in `hello`. Omitted by the in-repo dev entry point, which has
+  // no published version to report.
+  version?: string;
 }
 
 export interface ServerHandle {
@@ -220,6 +224,7 @@ export async function startServer(opts: StartServerOptions): Promise<ServerHandl
       type: "hello",
       protocol: PROTOCOL_VERSION,
       project: opts.cwd,
+      ...(opts.version !== undefined ? { version: opts.version } : {}),
     });
 
     // Read-only advertisement: tell the UI which session asks will land

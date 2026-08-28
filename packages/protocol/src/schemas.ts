@@ -71,6 +71,10 @@ export const HelloMessageSchema = z.object({
   type: z.literal("hello"),
   protocol: z.literal(PROTOCOL_VERSION),
   project: z.string(),
+  // Release of the `quackdiff` package serving this session, surfaced in
+  // the UI's settings menu. Optional: the in-repo dev server has no
+  // published version, and older servers never sent one.
+  version: z.string().optional(),
 });
 
 export const DiffMessageSchema = z.object({

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useStore } from "@/lib/store";
+import { statusItemClass } from "./status-item";
 import {
   derivePalette,
   paletteFromConfig,
@@ -87,16 +88,16 @@ export const ThemeEditor = ({ onSaved }: { onSaved?: () => void }) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 px-0"
+        <button
+          type="button"
+          className={statusItemClass}
           aria-label="Create custom theme"
+          title="Create custom theme"
         >
-          <SwatchBook className="size-4" />
-        </Button>
+          <SwatchBook className="size-3.5" aria-hidden />
+        </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-3 p-3 text-xs">
+      <PopoverContent side="top" align="end" className="w-72 space-y-3 p-3 text-xs">
         <div className="font-medium">New custom theme</div>
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-1.5">

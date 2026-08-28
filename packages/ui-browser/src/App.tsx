@@ -5,6 +5,7 @@ import { TopBar } from "./components/TopBar";
 import { StaleBanner } from "./components/StaleBanner";
 import { FileTree } from "./components/FileTree";
 import { DiffPane } from "./components/DiffPane";
+import { StatusBar } from "./components/StatusBar";
 import { Toaster } from "./components/Toaster";
 
 export const App = () => {
@@ -25,6 +26,7 @@ export const App = () => {
           <DiffPane />
         </main>
       </div>
+      <StatusBar />
       <Toaster />
     </div>
   );

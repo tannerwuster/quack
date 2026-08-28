@@ -58,6 +58,9 @@ type Store = {
   // connection
   conn: ConnectionState;
   protocol?: string;
+  // Release of the quackdiff server we're talking to. Absent when the
+  // server didn't report one (in-repo dev entry point).
+  serverVersion?: string;
   project?: string;
   // The Claude Code session this UI is attached to. Read-only — set
   // once when the server's `session` message arrives, never mutated
@@ -100,7 +103,9 @@ type Store = {
   filterTypes: string[];
 
   // keyboard-driven UI coordination
-  helpOpen: boolean;
+  // The combined settings menu (theme + shortcuts + version) in the status
+  // bar; "?" toggles it.
+  settingsOpen: boolean;
   // bumped by the "/" shortcut so the FileTree focuses its filter input
   focusFilterNonce: number;
 
@@ -136,6 +141,7 @@ type Store = {
   // server-message hooks (called by ws.ts)
   setConn: (c: ConnectionState) => void;
   setProtocol: (p: string) => void;
+  setServerVersion: (v: string) => void;
   setProject: (p: string) => void;
   setSessionId: (sid: string) => void;
   setDiff: (
@@ -160,7 +166,7 @@ type Store = {
   setFilterQuery: (q: string) => void;
   toggleFilterType: (type: string) => void;
   clearFilter: () => void;
-  setHelpOpen: (open: boolean) => void;
+  setSettingsOpen: (open: boolean) => void;
   requestFocusFilter: () => void;
   appendChunk: (askId: string, delta: string) => void;
   finishAsk: (askId: string, outcome: "done" | "error", message?: string) => void;
@@ -260,7 +266,7 @@ export const useStore = create<Store>((set, get) => ({
   resolvedThreads: initialResolved(),
   filterQuery: "",
   filterTypes: [],
-  helpOpen: false,
+  settingsOpen: false,
   focusFilterNonce: 0,
   toasts: [],
   _send: () => {
@@ -270,6 +276,7 @@ export const useStore = create<Store>((set, get) => ({
   setSend: (fn) => set({ _send: fn }),
   setConn: (c) => set({ conn: c }),
   setProtocol: (p) => set({ protocol: p }),
+  setServerVersion: (v) => set({ serverVersion: v }),
   setProject: (p) => set({ project: p }),
   setSessionId: (sid) => set({ sessionId: sid }),
 
@@ -359,7 +366,7 @@ export const useStore = create<Store>((set, get) => ({
         : [...s.filterTypes, type],
     })),
   clearFilter: () => set({ filterQuery: "", filterTypes: [] }),
-  setHelpOpen: (open) => set({ helpOpen: open }),
+  setSettingsOpen: (open) => set({ settingsOpen: open }),
   requestFocusFilter: () =>
     set((s) => ({ focusFilterNonce: s.focusFilterNonce + 1 })),
 
